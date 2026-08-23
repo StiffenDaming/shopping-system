@@ -1,0 +1,62 @@
+services:
+  # ===== MySQL 数据库 =====
+  mysql:
+    image: mysql:8.0
+    container_name: shopping-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: 123456
+      MYSQL_DATABASE: shopping
+      TZ: Asia/Shanghai
+      MYSQL_ROOT_HOST: '%'
+    ports:
+      - "3307:3306"    # 宿主机用 3307 访问（避免和本地 MySQL 冲突）
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./backend/src/main/resources/schema-mysql.sql:/docker-entrypoint-initdb.d/01-schema.sql
+    networks:
+      - shopping-net
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p123456"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ===== 后端 SpringBoot =====
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: shopping-backend
+    restart: "no"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      TZ: Asia/Shanghai
+    ports:
+      - "8081:8080"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - shopping-net
+
+  # ===== 前端 Vue + Nginx =====
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: shopping-frontend
+    restart: "no"
+    ports:
+      - "80:80"       # 前端直接走 80 端口
+    depends_on:
+      - backend
+    networks:
+      - shopping-net
+
+volumes:
+  mysql-data:
+
+networks:
+  shopping-net:
+    driver: bridge

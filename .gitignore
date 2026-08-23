@@ -1,0 +1,154 @@
+# ========== Java / Maven ==========
+# Maven 构建输出
+**/target/
+**/pom.xml.tag
+**/pom.xml.releaseBackup
+**/pom.xml.versionsBackup
+**/pom.xml.next
+**/release.properties
+**/dependency-reduced-pom.xml
+**/buildNumber.properties
+**/.mvn/timing.properties
+**/.mvn/wrapper/maven-wrapper.jar
+
+# Maven 本地仓库（如果你在项目里建了）
+**/repository/
+
+# ========== IDE ==========
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+.idea_modules/
+
+# Eclipse
+.classpath
+.project
+.settings/
+bin/
+.metadata/
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# ========== 前端 / Node.js ==========
+# Node modules
+**/node_modules/
+**/node_modules/**/*
+
+# 前端构建输出
+**/dist/
+**/dist-ssr/
+**/*.local
+
+# Vite 缓存
+**/.vite/
+**/vite.config.js.timestamp-*
+
+# npm / yarn / pnpm 锁文件（建议保留一个，但你可以在团队中约定）
+**/package-lock.json
+**/yarn.lock
+**/pnpm-lock.yaml
+
+# npm 调试日志
+**/npm-debug.log*
+**/yarn-debug.log*
+**/yarn-error.log*
+
+# ========== 数据库 / 数据文件 ==========
+# H2 数据库文件
+**/data/
+**/*.mv.db
+**/*.trace.db
+**/*.lock.db
+
+# MySQL 数据（本地）
+**/mysql-data/
+**/*.sql.bak
+
+# ========== 日志文件 ==========
+*.log
+logs/
+**/logs/
+
+# ========== 操作系统 ==========
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+._*
+
+# ========== Docker ==========
+# Docker 镜像/容器临时文件
+**/*.pid
+**/.dockerignore
+
+# 如果你用 .env 存敏感信息
+.env
+.env.local
+.env.*.local
+
+# ========== 项目特定 ==========
+# 上传文件目录（本地测试）
+**/uploads/
+**/uploads/**/*
+
+# 临时文件
+*.tmp
+*.temp
+**/*.tmp
+**/*.temp
+
+# 备份文件
+*.bak
+*.orig
+
+# 项目根目录的临时文件（tree.txt 这种）
+*.txt
+!README.md
+!requirements.txt
+!package.json
+!pom.xml
+!maven-settings.xml
+
+# 启动脚本（保留 .sh，但如果你有本地修改版就忽略）
+# start.sh 建议保留，但如果想忽略则取消注释：
+# start.sh
+
+# ========== 压缩包 ==========
+*.zip
+*.tar.gz
+*.rar
+*.7z
+
+# ========== 配置文件（敏感） ==========
+# 如果你有本地自定义配置
+**/application-local.yml
+**/application-dev.yml
+**/application-prod.yml
+**/bootstrap-local.yml
+**/*-local.yml
+
+# 证书/密钥文件
+*.p12
+*.pfx
+*.jks
+*.key
+*.pem
+*.crt
+*.cer
+
+# ========== 测试覆盖率 ==========
+**/coverage/
+**/.nyc_output/
+**/test-results/
+**/jacoco.exec
+
+# ========== 临时生成的文件 ==========
+**/*.class
+**/*.jar
+**/*.war
+*.hs_err_pid*
