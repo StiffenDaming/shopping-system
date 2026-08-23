@@ -33,6 +33,12 @@ const routes = [
     component: () => import('../views/Orders.vue'),
     meta: { requiresAuth: true }
   },
+  {
+    path: '/address',
+    name: 'Address',
+    component: () => import('../views/Address.vue'),
+    meta: { requiresAuth: true }
+  },
   // 管理端
   {
     path: '/admin',

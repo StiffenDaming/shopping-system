@@ -5,7 +5,14 @@
       <h2 class="page-title">确认订单</h2>
       <div class="checkout-content" v-loading="loading">
         <el-card class="address-card">
-          <template #header><span>收货信息</span></template>
+          <template #header>
+            <div class="card-header">
+              <span>收货信息</span>
+              <el-select v-if="savedAddresses.length > 0" v-model="selectedAddressId" placeholder="选择已保存地址" style="width:280px" @change="onAddressSelect">
+                <el-option v-for="addr in savedAddresses" :key="addr.id" :label="`${addr.receiverName} - ${addr.receiverAddress}`" :value="addr.id" />
+              </el-select>
+            </div>
+          </template>
           <el-form ref="formRef" :model="form" :rules="rules" label-width="100px">
             <el-form-item label="收货人" prop="receiverName">
               <el-input v-model="form.receiverName" placeholder="请输入收货人姓名" style="width:300px" />
@@ -63,6 +70,8 @@ const formRef = ref()
 const loading = ref(false)
 const submitting = ref(false)
 const cartItems = ref([])
+const savedAddresses = ref([])
+const selectedAddressId = ref(null)
 
 const form = reactive({ receiverName: '', receiverPhone: '', receiverAddress: '' })
 const rules = {
@@ -88,6 +97,30 @@ async function loadCart() {
   }
 }
 
+async function loadSavedAddresses() {
+  try {
+    const res = await request.get('/addresses')
+    savedAddresses.value = res.data || []
+    // 如果有默认地址，自动选中
+    const defaultAddr = savedAddresses.value.find(a => a.isDefault === 1)
+    if (defaultAddr) {
+      selectedAddressId.value = defaultAddr.id
+      fillAddress(defaultAddr)
+    }
+  } catch (e) { /* ignore */ }
+}
+
+function onAddressSelect(addrId) {
+  const addr = savedAddresses.value.find(a => a.id === addrId)
+  if (addr) fillAddress(addr)
+}
+
+function fillAddress(addr) {
+  form.receiverName = addr.receiverName
+  form.receiverPhone = addr.receiverPhone
+  form.receiverAddress = addr.receiverAddress
+}
+
 async function submitOrder() {
   await formRef.value.validate()
   submitting.value = true
@@ -106,13 +139,17 @@ function handleImgError(e) {
   e.target.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60"><rect fill="%23eee" width="60" height="60"/></svg>'
 }
 
-onMounted(loadCart)
+onMounted(() => {
+  loadCart()
+  loadSavedAddresses()
+})
 </script>
 
 <style scoped>
 .checkout-main { max-width: 900px; margin: 20px auto; padding: 0 20px; }
 .page-title { font-size: 22px; color: #333; margin-bottom: 20px; }
 .address-card, .goods-card { margin-bottom: 20px; }
+.card-header { display: flex; justify-content: space-between; align-items: center; }
 .cart-product { display: flex; align-items: center; gap: 12px; }
 .cart-img { width: 50px; height: 50px; object-fit: contain; }
 .checkout-footer { display: flex; justify-content: flex-end; align-items: center; gap: 30px; background: #fff; padding: 16px 24px; border-radius: 8px; }

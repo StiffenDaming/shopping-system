@@ -46,6 +46,32 @@ public class OrderController {
         return Result.success("订单已取消", null);
     }
 
+    /**
+     * 用户确认收货（SHIPPED -> COMPLETED）
+     */
+    @PutMapping("/{id}/confirm")
+    public Result<Void> confirmReceipt(@PathVariable Long id) {
+        orderService.confirmReceipt(UserContext.getCurrentId(), id);
+        return Result.success("已确认收货", null);
+    }
+
+    /**
+     * 获取未读订单数（用于红点提示）
+     */
+    @GetMapping("/unread-count")
+    public Result<Integer> unreadCount() {
+        return Result.success(orderService.getUnreadOrderCount(UserContext.getCurrentId()));
+    }
+
+    /**
+     * 标记订单列表已查看（消除红点）
+     */
+    @PutMapping("/mark-read")
+    public Result<Void> markRead() {
+        orderService.markOrdersViewed(UserContext.getCurrentId());
+        return Result.success();
+    }
+
     // ===== 管理员功能 =====
 
     @GetMapping("/admin")
@@ -63,11 +89,24 @@ public class OrderController {
         return Result.success(orderService.getOrderDetail(null, id));
     }
 
-    @PutMapping("/admin/{id}/status")
-    public Result<Void> updateStatus(@PathVariable Long id, @RequestParam String status) {
+    /**
+     * 管理员发货（PENDING -> SHIPPED）
+     */
+    @PutMapping("/admin/{id}/ship")
+    public Result<Void> ship(@PathVariable Long id) {
         checkAdmin();
-        orderService.updateOrderStatus(id, status);
-        return Result.success("订单状态已更新", null);
+        orderService.shipOrder(id);
+        return Result.success("订单已发货", null);
+    }
+
+    /**
+     * 管理员强制完成订单（SHIPPED -> COMPLETED）
+     */
+    @PutMapping("/admin/{id}/complete")
+    public Result<Void> complete(@PathVariable Long id) {
+        checkAdmin();
+        orderService.adminCompleteOrder(id);
+        return Result.success("订单已完成", null);
     }
 
     private void checkAdmin() {

@@ -33,6 +33,9 @@ public class User {
     /** 状态: 1-正常, 0-禁用 */
     private Integer status;
 
+    /** 上次查看订单列表的时间（用于红点提示） */
+    private LocalDateTime lastViewOrdersTime;
+
     @TableLogic
     private Integer deleted;
 

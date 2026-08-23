@@ -1,6 +1,6 @@
 <template>
   <div class="orders-page">
-    <UserHeader />
+    <UserHeader ref="headerRef" />
     <div class="orders-main">
       <h2 class="page-title">我的订单</h2>
       <div class="filter-bar">
@@ -35,7 +35,10 @@
             <div class="order-total">
               共 {{ o.items?.reduce((s, i) => s + i.quantity, 0) }} 件商品，合计：<span class="price">¥{{ o.totalAmount }}</span>
             </div>
-            <el-button v-if="o.status === 'PENDING'" type="danger" plain size="small" @click="cancelOrder(o.id)">取消订单</el-button>
+            <div class="order-actions">
+              <el-button v-if="o.status === 'PENDING'" type="danger" plain size="small" @click="cancelOrder(o.id)">取消订单</el-button>
+              <el-button v-if="o.status === 'SHIPPED'" type="success" plain size="small" @click="confirmReceipt(o.id)">确认收货</el-button>
+            </div>
           </div>
         </div>
         <el-empty v-if="!loading && orders.length === 0" description="暂无订单" />
@@ -58,6 +61,7 @@ const orders = ref([])
 const total = ref(0)
 const page = ref(1)
 const statusFilter = ref('')
+const headerRef = ref()
 
 const statusMap = { PENDING: '待发货', SHIPPED: '已发货', COMPLETED: '已完成', CANCELLED: '已取消' }
 const typeMap = { PENDING: 'warning', SHIPPED: 'primary', COMPLETED: 'success', CANCELLED: 'info' }
@@ -82,11 +86,31 @@ async function cancelOrder(id) {
   loadOrders()
 }
 
+async function confirmReceipt(id) {
+  await ElMessageBox.confirm('确认已收到商品？', '确认收货', { type: 'success' })
+  await request.put(`/orders/${id}/confirm`)
+  ElMessage.success('已确认收货')
+  loadOrders()
+}
+
+async function markOrdersAsRead() {
+  try {
+    await request.put('/orders/mark-read')
+    // 刷新 Header 上的红点
+    if (headerRef.value) {
+      headerRef.value.fetchUnreadCount?.()
+    }
+  } catch (e) { /* ignore */ }
+}
+
 function handleImgError(e) {
   e.target.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60"><rect fill="%23eee" width="60" height="60"/></svg>'
 }
 
-onMounted(loadOrders)
+onMounted(() => {
+  loadOrders()
+  markOrdersAsRead()
+})
 </script>
 
 <style scoped>
@@ -106,5 +130,6 @@ onMounted(loadOrders)
 .order-footer { display: flex; align-items: center; justify-content: space-between; padding: 12px 20px; border-top: 1px solid #f0f0f0; }
 .order-address { font-size: 12px; color: #999; flex: 1; }
 .order-total { font-size: 14px; color: #333; }
+.order-actions { display: flex; gap: 8px; }
 .pagination { display: flex; justify-content: center; margin-top: 20px; }
 </style>

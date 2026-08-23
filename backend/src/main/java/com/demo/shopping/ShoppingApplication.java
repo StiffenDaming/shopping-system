@@ -19,12 +19,13 @@ public class ShoppingApplication {
 
         StringBuilder sb = new StringBuilder();
         sb.append("\n========================================\n");
-        sb.append("  购物商城系统启动成功!\n");
-        sb.append("  后端API: http://localhost:").append(port).append("\n");
-        sb.append("  前端访问: http://localhost:5173 (需启动前端)\n");
+        sb.append("  购物商城系统 - 后端启动成功!\n");
+        sb.append("  API 端口: ").append(port).append("\n");
         sb.append("  当前环境: ").append(profile).append("\n");
+        sb.append("  前端访问: http://localhost:5173 (需启动前端)\n");
         sb.append("  默认账号: admin/123456 (管理员)\n");
         sb.append("            user/123456  (普通用户)\n");
+        sb.append("  提示: 后端是 API 服务，浏览器请访问前端页面\n");
         sb.append("========================================\n");
         System.out.println(sb);
     }

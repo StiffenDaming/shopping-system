@@ -123,14 +123,15 @@ docker compose up -d
 - [x] 商品列表浏览（搜索、分类筛选、排序、分页）
 - [x] 商品详情查看
 - [x] 购物车管理（加入、修改数量、删除）
-- [x] 提交订单（结算）
-- [x] 我的订单（查看、取消待发货订单）
+- [x] 收货地址管理（增删改查、设为默认、结算时选择）
+- [x] 提交订单（结算，可选择已保存地址）
+- [x] 我的订单（查看、取消待发货、确认收货、红点提示）
 
 ### 管理端功能
 - [x] 数据看板（用户/商品/订单统计、图表展示）
 - [x] 用户管理（列表、角色切换、禁用/启用、重置密码）
 - [x] 商品管理（新增、编辑、删除、上下架、图片、分类）
-- [x] 订单管理（列表、详情、发货、完成、状态筛选）
+- [x] 订单管理（列表、详情、发货、强制完成、状态筛选）
 - [x] 分类管理（列表、增删改）
 
 ## API 接口清单
@@ -178,10 +179,24 @@ docker compose up -d
 | POST | /api/orders/checkout | 提交订单 | 登录 |
 | GET | /api/orders | 我的订单列表 | 登录 |
 | GET | /api/orders/{id} | 订单详情 | 登录 |
-| PUT | /api/orders/{id}/cancel | 取消订单 | 登录 |
+| PUT | /api/orders/{id}/cancel | 取消订单（带事务） | 登录 |
+| PUT | /api/orders/{id}/confirm | 确认收货 | 登录 |
+| GET | /api/orders/unread-count | 获取未读订单数（红点提示） | 登录 |
+| PUT | /api/orders/mark-read | 标记订单已查看 | 登录 |
 | GET | /api/orders/admin | 管理员订单列表 | 管理员 |
 | GET | /api/orders/admin/{id} | 管理员订单详情 | 管理员 |
-| PUT | /api/orders/admin/{id}/status | 更新订单状态 | 管理员 |
+| PUT | /api/orders/admin/{id}/ship | 管理员发货 | 管理员 |
+| PUT | /api/orders/admin/{id}/complete | 管理员强制完成 | 管理员 |
+
+### 收货地址接口
+| 方法 | 路径 | 说明 | 权限 |
+|------|------|------|------|
+| GET | /api/addresses | 地址列表 | 登录 |
+| GET | /api/addresses/default | 默认地址 | 登录 |
+| POST | /api/addresses | 新增地址 | 登录 |
+| PUT | /api/addresses/{id} | 修改地址 | 登录 |
+| DELETE | /api/addresses/{id} | 删除地址 | 登录 |
+| PUT | /api/addresses/{id}/default | 设为默认 | 登录 |
 
 ### 管理员接口
 | 方法 | 路径 | 说明 | 权限 |
@@ -210,6 +225,7 @@ docker compose up -d
 | avatar | VARCHAR(255) | 头像URL |
 | role | VARCHAR(20) | 角色: USER/ADMIN |
 | status | INT | 状态: 1-正常, 0-禁用 |
+| last_view_orders_time | DATETIME | 上次查看订单时间（红点提示用） |
 | deleted | INT | 逻辑删除: 0-未删, 1-已删 |
 | create_time | DATETIME | 创建时间 |
 | update_time | DATETIME | 更新时间 |
@@ -274,6 +290,19 @@ docker compose up -d
 | quantity | INT | 数量 |
 | create_time | DATETIME | 创建时间 |
 
+### delivery_address（收货地址表）
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| id | BIGINT | 地址ID（主键） |
+| user_id | BIGINT | 用户ID |
+| receiver_name | VARCHAR(50) | 收货人姓名 |
+| receiver_phone | VARCHAR(20) | 联系电话 |
+| receiver_address | VARCHAR(255) | 详细地址 |
+| is_default | INT | 是否默认: 0-否, 1-是 |
+| deleted | INT | 逻辑删除 |
+| create_time | DATETIME | 创建时间 |
+| update_time | DATETIME | 更新时间 |
+
 ## 技术架构说明
 
 ### 后端架构
@@ -298,14 +327,24 @@ docker compose up -d
 ### 用户下单流程
 1. 用户浏览商品 → 加入购物车
 2. 进入购物车 → 确认商品和数量
-3. 点击结算 → 填写收货信息 → 提交订单
+3. 点击结算 → 选择已保存地址或手动填写收货信息 → 提交订单
 4. 系统校验库存 → 创建订单 → 创建订单明细 → 扣减库存 → 清空购物车
-5. 用户可在「我的订单」中查看订单，待发货状态可取消
+5. 用户可在「我的订单」中查看订单，待发货状态可取消，已发货状态可确认收货
 
 ### 管理员处理订单流程
 1. 管理员登录 → 订单管理
-2. 查看待发货订单 → 点击「发货」→ 状态变为已发货
-3. 点击「完成」→ 状态变为已完成 → 计入销售额
+2. 查看待发货订单 → 点击「发货」→ 状态变为已发货（触发用户端红点提示）
+3. 用户在「我的订单」确认收货 → 状态变为已完成
+4. 管理员可对已发货订单点击「强制完成」→ 状态变为已完成（防止用户忘记确认）
+
+### 订单状态流转
+```
+PENDING（待发货）
+  ├── 用户取消 → CANCELLED（已取消，恢复库存）
+  └── 管理员发货 → SHIPPED（已发货，触发红点）
+       ├── 用户确认收货 → COMPLETED（已完成）
+       └── 管理员强制完成 → COMPLETED（已完成）
+```
 
 ## 初始数据
 

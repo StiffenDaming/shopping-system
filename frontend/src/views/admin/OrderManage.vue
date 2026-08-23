@@ -25,11 +25,11 @@
       <el-table-column label="收货人" prop="receiverName" width="100" />
       <el-table-column label="电话" prop="receiverPhone" width="130" />
       <el-table-column label="下单时间" prop="createTime" width="180" />
-      <el-table-column label="操作" width="200">
+      <el-table-column label="操作" width="240">
         <template #default="{ row }">
           <el-button size="small" @click="viewDetail(row)">详情</el-button>
-          <el-button v-if="row.status === 'PENDING'" size="small" type="primary" @click="changeStatus(row, 'SHIPPED')">发货</el-button>
-          <el-button v-if="row.status === 'SHIPPED'" size="small" type="success" @click="changeStatus(row, 'COMPLETED')">完成</el-button>
+          <el-button v-if="row.status === 'PENDING'" size="small" type="primary" @click="shipOrder(row)">发货</el-button>
+          <el-button v-if="row.status === 'SHIPPED'" size="small" type="success" @click="completeOrder(row)">强制完成</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -96,11 +96,17 @@ async function viewDetail(row) {
   detailVisible.value = true
 }
 
-async function changeStatus(row, status) {
-  const label = textMap[status]
-  await ElMessageBox.confirm(`确定将订单「${row.orderNo}」标记为${label}？`, '提示')
-  await request.put(`/orders/admin/${row.id}/status`, null, { params: { status } })
-  ElMessage.success('订单状态已更新')
+async function shipOrder(row) {
+  await ElMessageBox.confirm(`确定将订单「${row.orderNo}」发货？`, '发货确认')
+  await request.put(`/orders/admin/${row.id}/ship`)
+  ElMessage.success('订单已发货')
+  loadOrders()
+}
+
+async function completeOrder(row) {
+  await ElMessageBox.confirm(`确定强制完成订单「${row.orderNo}」？`, '强制完成确认')
+  await request.put(`/orders/admin/${row.id}/complete`)
+  ElMessage.success('订单已完成')
   loadOrders()
 }
 

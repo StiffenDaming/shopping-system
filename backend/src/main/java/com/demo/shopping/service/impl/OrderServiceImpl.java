@@ -1,6 +1,7 @@
 package com.demo.shopping.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -162,6 +163,47 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         baseMapper.updateById(order);
     }
 
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void confirmReceipt(Long userId, Long orderId) {
+        Order order = baseMapper.selectById(orderId);
+        if (order == null) {
+            throw new BusinessException("订单不存在");
+        }
+        if (userId != null && !order.getUserId().equals(userId)) {
+            throw new BusinessException("无权操作此订单");
+        }
+        if (!"SHIPPED".equals(order.getStatus())) {
+            throw new BusinessException("只能确认已发货的订单");
+        }
+        order.setStatus("COMPLETED");
+        baseMapper.updateById(order);
+    }
+
+    @Override
+    public Integer getUnreadOrderCount(Long userId) {
+        // 查询用户上次查看订单的时间
+        User user = userMapper.selectById(userId);
+        if (user == null || user.getLastViewOrdersTime() == null) {
+            // 从未查看过，统计所有已发货订单
+            return Math.toIntExact(baseMapper.selectCount(new LambdaQueryWrapper<Order>()
+                    .eq(Order::getUserId, userId)
+                    .eq(Order::getStatus, "SHIPPED")));
+        }
+        // 统计管理员发货后（update_time > lastViewOrdersTime）且状态为已发货的订单数
+        return Math.toIntExact(baseMapper.selectCount(new LambdaQueryWrapper<Order>()
+                .eq(Order::getUserId, userId)
+                .eq(Order::getStatus, "SHIPPED")
+                .gt(Order::getUpdateTime, user.getLastViewOrdersTime())));
+    }
+
+    @Override
+    public void markOrdersViewed(Long userId) {
+        userMapper.update(null, new LambdaUpdateWrapper<User>()
+                .eq(User::getId, userId)
+                .set(User::getLastViewOrdersTime, LocalDateTime.now()));
+    }
+
     // ===== 管理员功能 =====
 
     @Override
@@ -172,16 +214,28 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
     }
 
     @Override
-    public void updateOrderStatus(Long orderId, String status) {
-        List<String> valid = Arrays.asList("PENDING", "SHIPPED", "COMPLETED", "CANCELLED");
-        if (!valid.contains(status)) {
-            throw new BusinessException("订单状态参数非法");
-        }
+    public void shipOrder(Long orderId) {
         Order order = baseMapper.selectById(orderId);
         if (order == null) {
             throw new BusinessException("订单不存在");
         }
-        order.setStatus(status);
+        if (!"PENDING".equals(order.getStatus())) {
+            throw new BusinessException("只能对待发货订单进行发货操作");
+        }
+        order.setStatus("SHIPPED");
+        baseMapper.updateById(order);
+    }
+
+    @Override
+    public void adminCompleteOrder(Long orderId) {
+        Order order = baseMapper.selectById(orderId);
+        if (order == null) {
+            throw new BusinessException("订单不存在");
+        }
+        if (!"SHIPPED".equals(order.getStatus())) {
+            throw new BusinessException("只能对已发货订单进行强制完成操作");
+        }
+        order.setStatus("COMPLETED");
         baseMapper.updateById(order);
     }
 
