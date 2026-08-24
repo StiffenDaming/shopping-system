@@ -12,6 +12,7 @@ import com.demo.shopping.entity.CartItem;
 import com.demo.shopping.entity.Product;
 import com.demo.shopping.entity.User;
 import com.demo.shopping.mapper.*;
+import io.qameta.allure.*;
 import org.apache.ibatis.builder.MapperBuilderAssistant;
 import org.apache.ibatis.session.Configuration;
 import org.junit.jupiter.api.*;
@@ -35,6 +36,8 @@ import static org.mockito.Mockito.*;
  * 订单服务单元测试
  * 覆盖：下单结算、取消订单、确认收货、发货、强制完成、红点计数
  */
+@Epic("Shopping System")
+@Feature("订单服务")
 @DisplayName("订单服务测试")
 @ExtendWith(MockitoExtension.class)
 class OrderServiceImplTest {
@@ -60,7 +63,6 @@ class OrderServiceImplTest {
 
     @BeforeAll
     static void initTableInfo() {
-        // MyBatis-Plus 在纯单元测试中需要手动初始化实体类的 TableInfo，否则 LambdaUpdateWrapper 无法解析
         Configuration configuration = new Configuration();
         MapperBuilderAssistant assistant = new MapperBuilderAssistant(configuration, "");
         TableInfoHelper.initTableInfo(assistant, User.class);
@@ -68,20 +70,20 @@ class OrderServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        // ServiceImpl 的 baseMapper 在父类中，需要手动注入
         ReflectionTestUtils.setField(orderService, "baseMapper", orderMapper);
     }
 
     // ==================== 下单结算 ====================
 
     @Nested
+    @Story("下单结算")
     @DisplayName("下单结算")
     class CheckoutTest {
 
         @Test
+        @Severity(SeverityLevel.BLOCKER)
         @DisplayName("正常下单 - 多件商品结算成功")
         void checkout_Success() {
-            // 准备购物车数据
             CartItem cartItem1 = createCartItem(1L, USER_ID, 10L, 2, "测试商品A", new BigDecimal("99.00"));
             CartItem cartItem2 = createCartItem(2L, USER_ID, 20L, 1, "测试商品B", new BigDecimal("199.00"));
             List<CartItem> cartItems = Arrays.asList(cartItem1, cartItem2);
@@ -94,7 +96,6 @@ class OrderServiceImplTest {
             dto.setReceiverPhone("13800138000");
             dto.setReceiverAddress("北京市海淀区xxx路123号");
 
-            // Mock 行为
             when(cartItemMapper.selectCartWithProduct(USER_ID)).thenReturn(cartItems);
             when(productMapper.selectById(10L)).thenReturn(productA);
             when(productMapper.selectById(20L)).thenReturn(productB);
@@ -104,24 +105,19 @@ class OrderServiceImplTest {
                 return 1;
             });
 
-            // 执行
             String orderNo = orderService.checkout(USER_ID, dto);
 
-            // 验证
             assertNotNull(orderNo);
             assertTrue(orderNo.startsWith("ORD"));
 
-            // 验证订单已插入
             verify(orderMapper, times(1)).insert(any(Order.class));
-            // 验证订单明细已插入（2件商品 = 2次）
             verify(orderItemMapper, times(2)).insert(any(OrderItem.class));
-            // 验证库存已扣减
             verify(productMapper, times(2)).updateById(any(Product.class));
-            // 验证购物车已清空
             verify(cartItemMapper, times(1)).deleteBatchIds(anyList());
         }
 
         @Test
+        @Severity(SeverityLevel.CRITICAL)
         @DisplayName("下单失败 - 购物车为空")
         void checkout_EmptyCart() {
             CheckoutDTO dto = new CheckoutDTO();
@@ -137,10 +133,11 @@ class OrderServiceImplTest {
         }
 
         @Test
+        @Severity(SeverityLevel.CRITICAL)
         @DisplayName("下单失败 - 商品已下架")
         void checkout_ProductOffline() {
             CartItem cartItem = createCartItem(1L, USER_ID, 10L, 2, "测试商品A", new BigDecimal("99.00"));
-            Product product = createProduct(10L, "测试商品A", new BigDecimal("99.00"), 100, 0); // status=0 已下架
+            Product product = createProduct(10L, "测试商品A", new BigDecimal("99.00"), 100, 0);
 
             CheckoutDTO dto = new CheckoutDTO();
             dto.setReceiverName("张三");
@@ -156,10 +153,11 @@ class OrderServiceImplTest {
         }
 
         @Test
+        @Severity(SeverityLevel.CRITICAL)
         @DisplayName("下单失败 - 库存不足")
         void checkout_InsufficientStock() {
             CartItem cartItem = createCartItem(1L, USER_ID, 10L, 5, "测试商品A", new BigDecimal("99.00"));
-            Product product = createProduct(10L, "测试商品A", new BigDecimal("99.00"), 3, 1); // 库存只有3，要买5
+            Product product = createProduct(10L, "测试商品A", new BigDecimal("99.00"), 3, 1);
 
             CheckoutDTO dto = new CheckoutDTO();
             dto.setReceiverName("张三");
@@ -178,10 +176,12 @@ class OrderServiceImplTest {
     // ==================== 取消订单 ====================
 
     @Nested
+    @Story("取消订单")
     @DisplayName("取消订单")
     class CancelOrderTest {
 
         @Test
+        @Severity(SeverityLevel.BLOCKER)
         @DisplayName("取消成功 - 待发货订单，库存恢复")
         void cancelOrder_Success() {
             Order order = createOrder(ORDER_ID, USER_ID, "PENDING");
@@ -197,16 +197,15 @@ class OrderServiceImplTest {
 
             orderService.cancelOrder(USER_ID, ORDER_ID);
 
-            // 验证库存恢复
-            assertEquals(12, productA.getStock()); // 10 + 2 = 12
-            assertEquals(6, productB.getStock());  // 5 + 1 = 6
-            // 验证订单状态更新
+            assertEquals(12, productA.getStock());
+            assertEquals(6, productB.getStock());
             assertEquals("CANCELLED", order.getStatus());
             verify(orderMapper).updateById(order);
             verify(productMapper, times(2)).updateById(any(Product.class));
         }
 
         @Test
+        @Severity(SeverityLevel.CRITICAL)
         @DisplayName("取消失败 - 订单状态不是待发货")
         void cancelOrder_WrongStatus() {
             Order order = createOrder(ORDER_ID, USER_ID, "SHIPPED");
@@ -218,9 +217,10 @@ class OrderServiceImplTest {
         }
 
         @Test
+        @Severity(SeverityLevel.CRITICAL)
         @DisplayName("取消失败 - 非本人订单")
         void cancelOrder_NotOwner() {
-            Order order = createOrder(ORDER_ID, 999L, "PENDING"); // 其他用户的订单
+            Order order = createOrder(ORDER_ID, 999L, "PENDING");
             when(orderMapper.selectById(ORDER_ID)).thenReturn(order);
 
             BusinessException ex = assertThrows(BusinessException.class,
@@ -229,6 +229,7 @@ class OrderServiceImplTest {
         }
 
         @Test
+        @Severity(SeverityLevel.NORMAL)
         @DisplayName("取消失败 - 订单不存在")
         void cancelOrder_NotFound() {
             when(orderMapper.selectById(ORDER_ID)).thenReturn(null);
@@ -242,10 +243,12 @@ class OrderServiceImplTest {
     // ==================== 确认收货 ====================
 
     @Nested
+    @Story("确认收货")
     @DisplayName("确认收货")
     class ConfirmReceiptTest {
 
         @Test
+        @Severity(SeverityLevel.CRITICAL)
         @DisplayName("确认收货成功 - 已发货订单")
         void confirmReceipt_Success() {
             Order order = createOrder(ORDER_ID, USER_ID, "SHIPPED");
@@ -258,6 +261,7 @@ class OrderServiceImplTest {
         }
 
         @Test
+        @Severity(SeverityLevel.CRITICAL)
         @DisplayName("确认收货失败 - 订单状态不是已发货")
         void confirmReceipt_WrongStatus() {
             Order order = createOrder(ORDER_ID, USER_ID, "PENDING");
@@ -269,6 +273,7 @@ class OrderServiceImplTest {
         }
 
         @Test
+        @Severity(SeverityLevel.CRITICAL)
         @DisplayName("确认收货失败 - 非本人订单")
         void confirmReceipt_NotOwner() {
             Order order = createOrder(ORDER_ID, 999L, "SHIPPED");
@@ -283,10 +288,12 @@ class OrderServiceImplTest {
     // ==================== 管理员发货 ====================
 
     @Nested
+    @Story("管理员发货")
     @DisplayName("管理员发货")
     class ShipOrderTest {
 
         @Test
+        @Severity(SeverityLevel.CRITICAL)
         @DisplayName("发货成功 - 待发货订单")
         void shipOrder_Success() {
             Order order = createOrder(ORDER_ID, USER_ID, "PENDING");
@@ -299,6 +306,7 @@ class OrderServiceImplTest {
         }
 
         @Test
+        @Severity(SeverityLevel.NORMAL)
         @DisplayName("发货失败 - 订单状态不是待发货")
         void shipOrder_WrongStatus() {
             Order order = createOrder(ORDER_ID, USER_ID, "COMPLETED");
@@ -310,6 +318,7 @@ class OrderServiceImplTest {
         }
 
         @Test
+        @Severity(SeverityLevel.NORMAL)
         @DisplayName("发货失败 - 订单不存在")
         void shipOrder_NotFound() {
             when(orderMapper.selectById(ORDER_ID)).thenReturn(null);
@@ -323,10 +332,12 @@ class OrderServiceImplTest {
     // ==================== 管理员强制完成 ====================
 
     @Nested
+    @Story("管理员强制完成")
     @DisplayName("管理员强制完成")
     class AdminCompleteOrderTest {
 
         @Test
+        @Severity(SeverityLevel.CRITICAL)
         @DisplayName("强制完成成功 - 已发货订单")
         void adminCompleteOrder_Success() {
             Order order = createOrder(ORDER_ID, USER_ID, "SHIPPED");
@@ -339,6 +350,7 @@ class OrderServiceImplTest {
         }
 
         @Test
+        @Severity(SeverityLevel.NORMAL)
         @DisplayName("强制完成失败 - 订单状态不是已发货")
         void adminCompleteOrder_WrongStatus() {
             Order order = createOrder(ORDER_ID, USER_ID, "PENDING");
@@ -353,10 +365,12 @@ class OrderServiceImplTest {
     // ==================== 红点提示 ====================
 
     @Nested
+    @Story("红点提示")
     @DisplayName("红点提示")
     class UnreadOrderCountTest {
 
         @Test
+        @Severity(SeverityLevel.CRITICAL)
         @DisplayName("获取红点数 - 用户曾查看过订单，统计发货后的新订单")
         void getUnreadOrderCount_WithLastViewTime() {
             User user = new User();
@@ -372,6 +386,7 @@ class OrderServiceImplTest {
         }
 
         @Test
+        @Severity(SeverityLevel.CRITICAL)
         @DisplayName("获取红点数 - 用户从未查看过订单，统计所有已发货订单")
         void getUnreadOrderCount_NoLastViewTime() {
             User user = new User();
@@ -387,6 +402,7 @@ class OrderServiceImplTest {
         }
 
         @Test
+        @Severity(SeverityLevel.MINOR)
         @DisplayName("获取红点数 - 用户不存在")
         void getUnreadOrderCount_UserNotFound() {
             when(userMapper.selectById(USER_ID)).thenReturn(null);
@@ -401,6 +417,7 @@ class OrderServiceImplTest {
     // ==================== 标记已读 ====================
 
     @Test
+    @Severity(SeverityLevel.NORMAL)
     @DisplayName("标记订单已读 - 更新用户查看时间")
     void markOrdersViewed_Success() {
         when(userMapper.update(any(), any())).thenReturn(1);
@@ -413,7 +430,7 @@ class OrderServiceImplTest {
     // ==================== 测试数据工厂方法 ====================
 
     private CartItem createCartItem(Long id, Long userId, Long productId, Integer quantity,
-                                     String productName, BigDecimal price) {
+                                    String productName, BigDecimal price) {
         CartItem item = new CartItem();
         item.setId(id);
         item.setUserId(userId);

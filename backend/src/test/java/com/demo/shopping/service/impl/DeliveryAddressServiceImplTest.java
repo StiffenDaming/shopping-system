@@ -7,6 +7,7 @@ import com.demo.shopping.common.BusinessException;
 import com.demo.shopping.dto.AddressDTO;
 import com.demo.shopping.entity.DeliveryAddress;
 import com.demo.shopping.mapper.DeliveryAddressMapper;
+import io.qameta.allure.*;
 import org.apache.ibatis.builder.MapperBuilderAssistant;
 import org.apache.ibatis.session.Configuration;
 import org.junit.jupiter.api.*;
@@ -27,6 +28,8 @@ import static org.mockito.Mockito.*;
  * 收货地址服务单元测试
  * 覆盖：增删改查、设置默认地址、权限校验
  */
+@Epic("Shopping System")
+@Feature("收货地址服务")
 @DisplayName("收货地址服务测试")
 @ExtendWith(MockitoExtension.class)
 class DeliveryAddressServiceImplTest {
@@ -42,7 +45,6 @@ class DeliveryAddressServiceImplTest {
 
     @BeforeAll
     static void initTableInfo() {
-        // MyBatis-Plus 在纯单元测试中需要手动初始化实体类的 TableInfo，否则 LambdaUpdateWrapper 无法解析
         Configuration configuration = new Configuration();
         MapperBuilderAssistant assistant = new MapperBuilderAssistant(configuration, "");
         TableInfoHelper.initTableInfo(assistant, DeliveryAddress.class);
@@ -56,6 +58,7 @@ class DeliveryAddressServiceImplTest {
     // ==================== 查询地址列表 ====================
 
     @Test
+    @Severity(SeverityLevel.CRITICAL)
     @DisplayName("查询地址列表 - 返回用户所有地址，默认地址排在前面")
     void listByUserId_Success() {
         DeliveryAddress addr1 = createAddress(1L, USER_ID, "地址A", 1);
@@ -65,10 +68,11 @@ class DeliveryAddressServiceImplTest {
         List<DeliveryAddress> result = addressService.listByUserId(USER_ID);
 
         assertEquals(2, result.size());
-        assertEquals(1, result.get(0).getIsDefault()); // 默认地址排在前面
+        assertEquals(1, result.get(0).getIsDefault());
     }
 
     @Test
+    @Severity(SeverityLevel.NORMAL)
     @DisplayName("查询默认地址 - 返回用户的默认地址")
     void getDefaultAddress_Success() {
         DeliveryAddress addr = createAddress(ADDRESS_ID, USER_ID, "默认地址", 1);
@@ -81,6 +85,7 @@ class DeliveryAddressServiceImplTest {
     }
 
     @Test
+    @Severity(SeverityLevel.NORMAL)
     @DisplayName("查询默认地址 - 用户没有默认地址时返回null")
     void getDefaultAddress_None() {
         when(addressMapper.selectOne(any())).thenReturn(null);
@@ -93,10 +98,12 @@ class DeliveryAddressServiceImplTest {
     // ==================== 新增地址 ====================
 
     @Nested
+    @Story("新增地址")
     @DisplayName("新增地址")
     class AddAddressTest {
 
         @Test
+        @Severity(SeverityLevel.CRITICAL)
         @DisplayName("新增成功 - 普通地址")
         void addAddress_Normal() {
             AddressDTO dto = new AddressDTO();
@@ -108,10 +115,11 @@ class DeliveryAddressServiceImplTest {
             addressService.addAddress(USER_ID, dto);
 
             verify(addressMapper, times(1)).insert(any(DeliveryAddress.class));
-            verify(addressMapper, never()).update(any(), any()); // 不需要清除其他默认
+            verify(addressMapper, never()).update(any(), any());
         }
 
         @Test
+        @Severity(SeverityLevel.CRITICAL)
         @DisplayName("新增成功 - 设为默认地址时，自动取消旧默认地址")
         void addAddress_WithDefault() {
             AddressDTO dto = new AddressDTO();
@@ -122,13 +130,12 @@ class DeliveryAddressServiceImplTest {
 
             addressService.addAddress(USER_ID, dto);
 
-            // 验证先清除了旧的默认地址
             verify(addressMapper, times(1)).update(isNull(), any());
-            // 验证插入了新地址
             verify(addressMapper, times(1)).insert(any(DeliveryAddress.class));
         }
 
         @Test
+        @Severity(SeverityLevel.MINOR)
         @DisplayName("新增成功 - isDefault为null时默认设为0")
         void addAddress_NullDefault() {
             AddressDTO dto = new AddressDTO();
@@ -146,10 +153,12 @@ class DeliveryAddressServiceImplTest {
     // ==================== 修改地址 ====================
 
     @Nested
+    @Story("修改地址")
     @DisplayName("修改地址")
     class UpdateAddressTest {
 
         @Test
+        @Severity(SeverityLevel.CRITICAL)
         @DisplayName("修改成功")
         void updateAddress_Success() {
             DeliveryAddress existing = createAddress(ADDRESS_ID, USER_ID, "旧地址", 0);
@@ -170,6 +179,7 @@ class DeliveryAddressServiceImplTest {
         }
 
         @Test
+        @Severity(SeverityLevel.CRITICAL)
         @DisplayName("修改成功 - 同时设为默认，自动取消旧默认")
         void updateAddress_SetDefault() {
             DeliveryAddress existing = createAddress(ADDRESS_ID, USER_ID, "旧地址", 0);
@@ -183,13 +193,13 @@ class DeliveryAddressServiceImplTest {
 
             addressService.updateAddress(USER_ID, ADDRESS_ID, dto);
 
-            // 验证清除了旧的默认地址
             verify(addressMapper, times(1)).update(isNull(), any());
             verify(addressMapper).updateById(existing);
             assertEquals(1, existing.getIsDefault());
         }
 
         @Test
+        @Severity(SeverityLevel.NORMAL)
         @DisplayName("修改失败 - 地址不存在")
         void updateAddress_NotFound() {
             AddressDTO dto = new AddressDTO();
@@ -205,6 +215,7 @@ class DeliveryAddressServiceImplTest {
         }
 
         @Test
+        @Severity(SeverityLevel.CRITICAL)
         @DisplayName("修改失败 - 非本人地址")
         void updateAddress_NotOwner() {
             DeliveryAddress existing = createAddress(ADDRESS_ID, 999L, "他人地址", 0);
@@ -224,10 +235,12 @@ class DeliveryAddressServiceImplTest {
     // ==================== 删除地址 ====================
 
     @Nested
+    @Story("删除地址")
     @DisplayName("删除地址")
     class DeleteAddressTest {
 
         @Test
+        @Severity(SeverityLevel.CRITICAL)
         @DisplayName("删除成功")
         void deleteAddress_Success() {
             DeliveryAddress existing = createAddress(ADDRESS_ID, USER_ID, "测试地址", 0);
@@ -239,6 +252,7 @@ class DeliveryAddressServiceImplTest {
         }
 
         @Test
+        @Severity(SeverityLevel.NORMAL)
         @DisplayName("删除失败 - 地址不存在")
         void deleteAddress_NotFound() {
             when(addressMapper.selectById(ADDRESS_ID)).thenReturn(null);
@@ -249,6 +263,7 @@ class DeliveryAddressServiceImplTest {
         }
 
         @Test
+        @Severity(SeverityLevel.CRITICAL)
         @DisplayName("删除失败 - 非本人地址")
         void deleteAddress_NotOwner() {
             DeliveryAddress existing = createAddress(ADDRESS_ID, 999L, "他人地址", 0);
@@ -263,10 +278,12 @@ class DeliveryAddressServiceImplTest {
     // ==================== 设置默认地址 ====================
 
     @Nested
+    @Story("设置默认地址")
     @DisplayName("设置默认地址")
     class SetDefaultTest {
 
         @Test
+        @Severity(SeverityLevel.CRITICAL)
         @DisplayName("设置默认成功 - 先清除旧默认，再设置新默认")
         void setDefault_Success() {
             DeliveryAddress existing = createAddress(ADDRESS_ID, USER_ID, "测试地址", 0);
@@ -274,11 +291,11 @@ class DeliveryAddressServiceImplTest {
 
             addressService.setDefault(USER_ID, ADDRESS_ID);
 
-            // clearDefaultAddresses 调用1次 update，setDefault 再调用1次，共2次
             verify(addressMapper, times(2)).update(isNull(), any());
         }
 
         @Test
+        @Severity(SeverityLevel.NORMAL)
         @DisplayName("设置默认失败 - 地址不存在")
         void setDefault_NotFound() {
             when(addressMapper.selectById(ADDRESS_ID)).thenReturn(null);
@@ -289,6 +306,7 @@ class DeliveryAddressServiceImplTest {
         }
 
         @Test
+        @Severity(SeverityLevel.CRITICAL)
         @DisplayName("设置默认失败 - 非本人地址")
         void setDefault_NotOwner() {
             DeliveryAddress existing = createAddress(ADDRESS_ID, 999L, "他人地址", 0);
