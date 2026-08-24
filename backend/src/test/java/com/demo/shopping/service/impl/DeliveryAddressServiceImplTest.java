@@ -61,12 +61,15 @@ class DeliveryAddressServiceImplTest {
     @Severity(SeverityLevel.CRITICAL)
     @DisplayName("查询地址列表 - 返回用户所有地址，默认地址排在前面")
     void listByUserId_Success() {
+        Allure.step("准备测试数据：2个地址，其中1个为默认");
         DeliveryAddress addr1 = createAddress(1L, USER_ID, "地址A", 1);
         DeliveryAddress addr2 = createAddress(2L, USER_ID, "地址B", 0);
         when(addressMapper.selectList(any())).thenReturn(Arrays.asList(addr1, addr2));
 
+        Allure.step("执行查询操作");
         List<DeliveryAddress> result = addressService.listByUserId(USER_ID);
 
+        Allure.step("验证：返回2条记录，默认地址排在第一位");
         assertEquals(2, result.size());
         assertEquals(1, result.get(0).getIsDefault());
     }
@@ -75,11 +78,14 @@ class DeliveryAddressServiceImplTest {
     @Severity(SeverityLevel.NORMAL)
     @DisplayName("查询默认地址 - 返回用户的默认地址")
     void getDefaultAddress_Success() {
+        Allure.step("准备测试数据：1个默认地址");
         DeliveryAddress addr = createAddress(ADDRESS_ID, USER_ID, "默认地址", 1);
         when(addressMapper.selectOne(any())).thenReturn(addr);
 
+        Allure.step("执行查询默认地址操作");
         DeliveryAddress result = addressService.getDefaultAddress(USER_ID);
 
+        Allure.step("验证：返回的地址 isDefault=1");
         assertNotNull(result);
         assertEquals(1, result.getIsDefault());
     }
@@ -88,10 +94,10 @@ class DeliveryAddressServiceImplTest {
     @Severity(SeverityLevel.NORMAL)
     @DisplayName("查询默认地址 - 用户没有默认地址时返回null")
     void getDefaultAddress_None() {
+        Allure.step("Mock 查询返回null");
         when(addressMapper.selectOne(any())).thenReturn(null);
 
         DeliveryAddress result = addressService.getDefaultAddress(USER_ID);
-
         assertNull(result);
     }
 
@@ -106,14 +112,17 @@ class DeliveryAddressServiceImplTest {
         @Severity(SeverityLevel.CRITICAL)
         @DisplayName("新增成功 - 普通地址")
         void addAddress_Normal() {
+            Allure.step("准备DTO：普通地址（isDefault=0）");
             AddressDTO dto = new AddressDTO();
             dto.setReceiverName("张三");
             dto.setReceiverPhone("13800138000");
             dto.setReceiverAddress("北京市海淀区xxx路");
             dto.setIsDefault(0);
 
+            Allure.step("执行新增操作");
             addressService.addAddress(USER_ID, dto);
 
+            Allure.step("验证：插入了1条记录，未修改其他地址的默认状态");
             verify(addressMapper, times(1)).insert(any(DeliveryAddress.class));
             verify(addressMapper, never()).update(any(), any());
         }
@@ -122,14 +131,17 @@ class DeliveryAddressServiceImplTest {
         @Severity(SeverityLevel.CRITICAL)
         @DisplayName("新增成功 - 设为默认地址时，自动取消旧默认地址")
         void addAddress_WithDefault() {
+            Allure.step("准备DTO：设为默认地址（isDefault=1）");
             AddressDTO dto = new AddressDTO();
             dto.setReceiverName("张三");
             dto.setReceiverPhone("13800138000");
             dto.setReceiverAddress("北京市海淀区xxx路");
             dto.setIsDefault(1);
 
+            Allure.step("执行新增操作");
             addressService.addAddress(USER_ID, dto);
 
+            Allure.step("验证：先清除旧默认（update 1次），再插入新地址（insert 1次）");
             verify(addressMapper, times(1)).update(isNull(), any());
             verify(addressMapper, times(1)).insert(any(DeliveryAddress.class));
         }
@@ -138,6 +150,7 @@ class DeliveryAddressServiceImplTest {
         @Severity(SeverityLevel.MINOR)
         @DisplayName("新增成功 - isDefault为null时默认设为0")
         void addAddress_NullDefault() {
+            Allure.step("准备DTO：isDefault=null");
             AddressDTO dto = new AddressDTO();
             dto.setReceiverName("张三");
             dto.setReceiverPhone("13800138000");
@@ -146,6 +159,7 @@ class DeliveryAddressServiceImplTest {
 
             addressService.addAddress(USER_ID, dto);
 
+            Allure.step("验证：插入的记录 isDefault=0");
             verify(addressMapper, times(1)).insert(argThat(addr -> addr.getIsDefault() == 0));
         }
     }
@@ -161,6 +175,7 @@ class DeliveryAddressServiceImplTest {
         @Severity(SeverityLevel.CRITICAL)
         @DisplayName("修改成功")
         void updateAddress_Success() {
+            Allure.step("准备测试数据：已存在的地址记录");
             DeliveryAddress existing = createAddress(ADDRESS_ID, USER_ID, "旧地址", 0);
             AddressDTO dto = new AddressDTO();
             dto.setReceiverName("李四");
@@ -170,8 +185,10 @@ class DeliveryAddressServiceImplTest {
 
             when(addressMapper.selectById(ADDRESS_ID)).thenReturn(existing);
 
+            Allure.step("执行修改操作");
             addressService.updateAddress(USER_ID, ADDRESS_ID, dto);
 
+            Allure.step("验证：姓名、电话、地址均已更新");
             assertEquals("李四", existing.getReceiverName());
             assertEquals("13900139000", existing.getReceiverPhone());
             assertEquals("上海市浦东新区", existing.getReceiverAddress());
@@ -182,6 +199,7 @@ class DeliveryAddressServiceImplTest {
         @Severity(SeverityLevel.CRITICAL)
         @DisplayName("修改成功 - 同时设为默认，自动取消旧默认")
         void updateAddress_SetDefault() {
+            Allure.step("准备测试数据：已存在地址 + DTO设为默认");
             DeliveryAddress existing = createAddress(ADDRESS_ID, USER_ID, "旧地址", 0);
             AddressDTO dto = new AddressDTO();
             dto.setReceiverName("李四");
@@ -191,8 +209,10 @@ class DeliveryAddressServiceImplTest {
 
             when(addressMapper.selectById(ADDRESS_ID)).thenReturn(existing);
 
+            Allure.step("执行修改操作");
             addressService.updateAddress(USER_ID, ADDRESS_ID, dto);
 
+            Allure.step("验证：先清除旧默认（update 1次），再更新地址（updateById 1次）");
             verify(addressMapper, times(1)).update(isNull(), any());
             verify(addressMapper).updateById(existing);
             assertEquals(1, existing.getIsDefault());
@@ -202,6 +222,7 @@ class DeliveryAddressServiceImplTest {
         @Severity(SeverityLevel.NORMAL)
         @DisplayName("修改失败 - 地址不存在")
         void updateAddress_NotFound() {
+            Allure.step("Mock 查询返回null");
             AddressDTO dto = new AddressDTO();
             dto.setReceiverName("李四");
             dto.setReceiverPhone("13900139000");
@@ -218,6 +239,7 @@ class DeliveryAddressServiceImplTest {
         @Severity(SeverityLevel.CRITICAL)
         @DisplayName("修改失败 - 非本人地址")
         void updateAddress_NotOwner() {
+            Allure.step("准备测试数据：地址属于用户999");
             DeliveryAddress existing = createAddress(ADDRESS_ID, 999L, "他人地址", 0);
             AddressDTO dto = new AddressDTO();
             dto.setReceiverName("李四");
@@ -243,11 +265,14 @@ class DeliveryAddressServiceImplTest {
         @Severity(SeverityLevel.CRITICAL)
         @DisplayName("删除成功")
         void deleteAddress_Success() {
+            Allure.step("准备测试数据：地址属于当前用户");
             DeliveryAddress existing = createAddress(ADDRESS_ID, USER_ID, "测试地址", 0);
             when(addressMapper.selectById(ADDRESS_ID)).thenReturn(existing);
 
+            Allure.step("执行删除操作");
             addressService.deleteAddress(USER_ID, ADDRESS_ID);
 
+            Allure.step("验证：已调用 deleteById");
             verify(addressMapper).deleteById(ADDRESS_ID);
         }
 
@@ -255,6 +280,7 @@ class DeliveryAddressServiceImplTest {
         @Severity(SeverityLevel.NORMAL)
         @DisplayName("删除失败 - 地址不存在")
         void deleteAddress_NotFound() {
+            Allure.step("Mock 查询返回null");
             when(addressMapper.selectById(ADDRESS_ID)).thenReturn(null);
 
             BusinessException ex = assertThrows(BusinessException.class,
@@ -266,6 +292,7 @@ class DeliveryAddressServiceImplTest {
         @Severity(SeverityLevel.CRITICAL)
         @DisplayName("删除失败 - 非本人地址")
         void deleteAddress_NotOwner() {
+            Allure.step("准备测试数据：地址属于用户999");
             DeliveryAddress existing = createAddress(ADDRESS_ID, 999L, "他人地址", 0);
             when(addressMapper.selectById(ADDRESS_ID)).thenReturn(existing);
 
@@ -286,11 +313,14 @@ class DeliveryAddressServiceImplTest {
         @Severity(SeverityLevel.CRITICAL)
         @DisplayName("设置默认成功 - 先清除旧默认，再设置新默认")
         void setDefault_Success() {
+            Allure.step("准备测试数据：地址属于当前用户");
             DeliveryAddress existing = createAddress(ADDRESS_ID, USER_ID, "测试地址", 0);
             when(addressMapper.selectById(ADDRESS_ID)).thenReturn(existing);
 
+            Allure.step("执行设置默认操作");
             addressService.setDefault(USER_ID, ADDRESS_ID);
 
+            Allure.step("验证：先清除旧默认（update 1次），再设置新默认（update 1次），共2次");
             verify(addressMapper, times(2)).update(isNull(), any());
         }
 
@@ -298,6 +328,7 @@ class DeliveryAddressServiceImplTest {
         @Severity(SeverityLevel.NORMAL)
         @DisplayName("设置默认失败 - 地址不存在")
         void setDefault_NotFound() {
+            Allure.step("Mock 查询返回null");
             when(addressMapper.selectById(ADDRESS_ID)).thenReturn(null);
 
             BusinessException ex = assertThrows(BusinessException.class,
@@ -309,6 +340,7 @@ class DeliveryAddressServiceImplTest {
         @Severity(SeverityLevel.CRITICAL)
         @DisplayName("设置默认失败 - 非本人地址")
         void setDefault_NotOwner() {
+            Allure.step("准备测试数据：地址属于用户999");
             DeliveryAddress existing = createAddress(ADDRESS_ID, 999L, "他人地址", 0);
             when(addressMapper.selectById(ADDRESS_ID)).thenReturn(existing);
 
@@ -320,6 +352,7 @@ class DeliveryAddressServiceImplTest {
 
     // ==================== 测试数据工厂方法 ====================
 
+    @Step("创建测试收货地址：id={id}, userId={userId}, name={name}, isDefault={isDefault}")
     private DeliveryAddress createAddress(Long id, Long userId, String name, Integer isDefault) {
         DeliveryAddress address = new DeliveryAddress();
         address.setId(id);

@@ -84,18 +84,22 @@ class OrderServiceImplTest {
         @Severity(SeverityLevel.BLOCKER)
         @DisplayName("正常下单 - 多件商品结算成功")
         void checkout_Success() {
+            Allure.step("准备购物车数据：2件商品（商品A x2, 商品B x1）");
             CartItem cartItem1 = createCartItem(1L, USER_ID, 10L, 2, "测试商品A", new BigDecimal("99.00"));
             CartItem cartItem2 = createCartItem(2L, USER_ID, 20L, 1, "测试商品B", new BigDecimal("199.00"));
             List<CartItem> cartItems = Arrays.asList(cartItem1, cartItem2);
 
+            Allure.step("准备商品数据：商品A库存100，商品B库存50");
             Product productA = createProduct(10L, "测试商品A", new BigDecimal("99.00"), 100, 1);
             Product productB = createProduct(20L, "测试商品B", new BigDecimal("199.00"), 50, 1);
 
+            Allure.step("准备收货信息DTO");
             CheckoutDTO dto = new CheckoutDTO();
             dto.setReceiverName("张三");
             dto.setReceiverPhone("13800138000");
             dto.setReceiverAddress("北京市海淀区xxx路123号");
 
+            Allure.step("Mock 购物车查询、商品查询、订单插入");
             when(cartItemMapper.selectCartWithProduct(USER_ID)).thenReturn(cartItems);
             when(productMapper.selectById(10L)).thenReturn(productA);
             when(productMapper.selectById(20L)).thenReturn(productB);
@@ -105,11 +109,14 @@ class OrderServiceImplTest {
                 return 1;
             });
 
+            Allure.step("执行下单操作");
             String orderNo = orderService.checkout(USER_ID, dto);
 
+            Allure.step("验证：订单号不为空且以ORD开头");
             assertNotNull(orderNo);
             assertTrue(orderNo.startsWith("ORD"));
 
+            Allure.step("验证：订单已插入1次，明细已插入2次，库存已扣减2次，购物车已清空");
             verify(orderMapper, times(1)).insert(any(Order.class));
             verify(orderItemMapper, times(2)).insert(any(OrderItem.class));
             verify(productMapper, times(2)).updateById(any(Product.class));
@@ -120,15 +127,18 @@ class OrderServiceImplTest {
         @Severity(SeverityLevel.CRITICAL)
         @DisplayName("下单失败 - 购物车为空")
         void checkout_EmptyCart() {
+            Allure.step("Mock 购物车查询返回空列表");
             CheckoutDTO dto = new CheckoutDTO();
             dto.setReceiverName("张三");
             dto.setReceiverPhone("13800138000");
             dto.setReceiverAddress("北京市海淀区");
-
             when(cartItemMapper.selectCartWithProduct(USER_ID)).thenReturn(Collections.emptyList());
 
+            Allure.step("执行下单操作，预期抛出异常");
             BusinessException ex = assertThrows(BusinessException.class,
                     () -> orderService.checkout(USER_ID, dto));
+
+            Allure.step("验证异常消息为'购物车为空，无法下单'");
             assertEquals("购物车为空，无法下单", ex.getMessage());
         }
 
@@ -136,6 +146,7 @@ class OrderServiceImplTest {
         @Severity(SeverityLevel.CRITICAL)
         @DisplayName("下单失败 - 商品已下架")
         void checkout_ProductOffline() {
+            Allure.step("准备测试数据：商品状态为0（已下架）");
             CartItem cartItem = createCartItem(1L, USER_ID, 10L, 2, "测试商品A", new BigDecimal("99.00"));
             Product product = createProduct(10L, "测试商品A", new BigDecimal("99.00"), 100, 0);
 
@@ -156,6 +167,7 @@ class OrderServiceImplTest {
         @Severity(SeverityLevel.CRITICAL)
         @DisplayName("下单失败 - 库存不足")
         void checkout_InsufficientStock() {
+            Allure.step("准备测试数据：库存3，购买5");
             CartItem cartItem = createCartItem(1L, USER_ID, 10L, 5, "测试商品A", new BigDecimal("99.00"));
             Product product = createProduct(10L, "测试商品A", new BigDecimal("99.00"), 3, 1);
 
@@ -184,21 +196,27 @@ class OrderServiceImplTest {
         @Severity(SeverityLevel.BLOCKER)
         @DisplayName("取消成功 - 待发货订单，库存恢复")
         void cancelOrder_Success() {
+            Allure.step("准备测试数据：PENDING订单，含2件商品（商品A x2, 商品B x1）");
             Order order = createOrder(ORDER_ID, USER_ID, "PENDING");
             OrderItem item1 = createOrderItem(ORDER_ID, 10L, "商品A", 2);
             OrderItem item2 = createOrderItem(ORDER_ID, 20L, "商品B", 1);
             Product productA = createProduct(10L, "商品A", new BigDecimal("99.00"), 10, 1);
             Product productB = createProduct(20L, "商品B", new BigDecimal("199.00"), 5, 1);
 
+            Allure.step("Mock 订单查询、明细查询、商品查询");
             when(orderMapper.selectById(ORDER_ID)).thenReturn(order);
             when(orderItemMapper.selectList(any())).thenReturn(Arrays.asList(item1, item2));
             when(productMapper.selectById(10L)).thenReturn(productA);
             when(productMapper.selectById(20L)).thenReturn(productB);
 
+            Allure.step("执行取消订单操作");
             orderService.cancelOrder(USER_ID, ORDER_ID);
 
+            Allure.step("验证：商品A库存恢复为12（10+2），商品B库存恢复为6（5+1）");
             assertEquals(12, productA.getStock());
             assertEquals(6, productB.getStock());
+
+            Allure.step("验证：订单状态变为CANCELLED");
             assertEquals("CANCELLED", order.getStatus());
             verify(orderMapper).updateById(order);
             verify(productMapper, times(2)).updateById(any(Product.class));
@@ -208,6 +226,7 @@ class OrderServiceImplTest {
         @Severity(SeverityLevel.CRITICAL)
         @DisplayName("取消失败 - 订单状态不是待发货")
         void cancelOrder_WrongStatus() {
+            Allure.step("准备测试数据：订单状态为SHIPPED");
             Order order = createOrder(ORDER_ID, USER_ID, "SHIPPED");
             when(orderMapper.selectById(ORDER_ID)).thenReturn(order);
 
@@ -220,6 +239,7 @@ class OrderServiceImplTest {
         @Severity(SeverityLevel.CRITICAL)
         @DisplayName("取消失败 - 非本人订单")
         void cancelOrder_NotOwner() {
+            Allure.step("准备测试数据：订单属于用户999");
             Order order = createOrder(ORDER_ID, 999L, "PENDING");
             when(orderMapper.selectById(ORDER_ID)).thenReturn(order);
 
@@ -232,6 +252,7 @@ class OrderServiceImplTest {
         @Severity(SeverityLevel.NORMAL)
         @DisplayName("取消失败 - 订单不存在")
         void cancelOrder_NotFound() {
+            Allure.step("Mock 订单查询返回null");
             when(orderMapper.selectById(ORDER_ID)).thenReturn(null);
 
             BusinessException ex = assertThrows(BusinessException.class,
@@ -251,11 +272,14 @@ class OrderServiceImplTest {
         @Severity(SeverityLevel.CRITICAL)
         @DisplayName("确认收货成功 - 已发货订单")
         void confirmReceipt_Success() {
+            Allure.step("准备测试数据：SHIPPED状态订单");
             Order order = createOrder(ORDER_ID, USER_ID, "SHIPPED");
             when(orderMapper.selectById(ORDER_ID)).thenReturn(order);
 
+            Allure.step("执行确认收货操作");
             orderService.confirmReceipt(USER_ID, ORDER_ID);
 
+            Allure.step("验证：订单状态变为COMPLETED");
             assertEquals("COMPLETED", order.getStatus());
             verify(orderMapper).updateById(order);
         }
@@ -264,6 +288,7 @@ class OrderServiceImplTest {
         @Severity(SeverityLevel.CRITICAL)
         @DisplayName("确认收货失败 - 订单状态不是已发货")
         void confirmReceipt_WrongStatus() {
+            Allure.step("准备测试数据：PENDING状态订单");
             Order order = createOrder(ORDER_ID, USER_ID, "PENDING");
             when(orderMapper.selectById(ORDER_ID)).thenReturn(order);
 
@@ -276,6 +301,7 @@ class OrderServiceImplTest {
         @Severity(SeverityLevel.CRITICAL)
         @DisplayName("确认收货失败 - 非本人订单")
         void confirmReceipt_NotOwner() {
+            Allure.step("准备测试数据：订单属于用户999");
             Order order = createOrder(ORDER_ID, 999L, "SHIPPED");
             when(orderMapper.selectById(ORDER_ID)).thenReturn(order);
 
@@ -296,11 +322,14 @@ class OrderServiceImplTest {
         @Severity(SeverityLevel.CRITICAL)
         @DisplayName("发货成功 - 待发货订单")
         void shipOrder_Success() {
+            Allure.step("准备测试数据：PENDING状态订单");
             Order order = createOrder(ORDER_ID, USER_ID, "PENDING");
             when(orderMapper.selectById(ORDER_ID)).thenReturn(order);
 
+            Allure.step("执行发货操作");
             orderService.shipOrder(ORDER_ID);
 
+            Allure.step("验证：订单状态变为SHIPPED");
             assertEquals("SHIPPED", order.getStatus());
             verify(orderMapper).updateById(order);
         }
@@ -309,6 +338,7 @@ class OrderServiceImplTest {
         @Severity(SeverityLevel.NORMAL)
         @DisplayName("发货失败 - 订单状态不是待发货")
         void shipOrder_WrongStatus() {
+            Allure.step("准备测试数据：COMPLETED状态订单");
             Order order = createOrder(ORDER_ID, USER_ID, "COMPLETED");
             when(orderMapper.selectById(ORDER_ID)).thenReturn(order);
 
@@ -321,6 +351,7 @@ class OrderServiceImplTest {
         @Severity(SeverityLevel.NORMAL)
         @DisplayName("发货失败 - 订单不存在")
         void shipOrder_NotFound() {
+            Allure.step("Mock 订单查询返回null");
             when(orderMapper.selectById(ORDER_ID)).thenReturn(null);
 
             BusinessException ex = assertThrows(BusinessException.class,
@@ -340,11 +371,14 @@ class OrderServiceImplTest {
         @Severity(SeverityLevel.CRITICAL)
         @DisplayName("强制完成成功 - 已发货订单")
         void adminCompleteOrder_Success() {
+            Allure.step("准备测试数据：SHIPPED状态订单");
             Order order = createOrder(ORDER_ID, USER_ID, "SHIPPED");
             when(orderMapper.selectById(ORDER_ID)).thenReturn(order);
 
+            Allure.step("执行强制完成操作");
             orderService.adminCompleteOrder(ORDER_ID);
 
+            Allure.step("验证：订单状态变为COMPLETED");
             assertEquals("COMPLETED", order.getStatus());
             verify(orderMapper).updateById(order);
         }
@@ -353,6 +387,7 @@ class OrderServiceImplTest {
         @Severity(SeverityLevel.NORMAL)
         @DisplayName("强制完成失败 - 订单状态不是已发货")
         void adminCompleteOrder_WrongStatus() {
+            Allure.step("准备测试数据：PENDING状态订单");
             Order order = createOrder(ORDER_ID, USER_ID, "PENDING");
             when(orderMapper.selectById(ORDER_ID)).thenReturn(order);
 
@@ -373,6 +408,7 @@ class OrderServiceImplTest {
         @Severity(SeverityLevel.CRITICAL)
         @DisplayName("获取红点数 - 用户曾查看过订单，统计发货后的新订单")
         void getUnreadOrderCount_WithLastViewTime() {
+            Allure.step("准备测试数据：用户上次查看时间为1天前");
             User user = new User();
             user.setId(USER_ID);
             user.setLastViewOrdersTime(LocalDateTime.now().minusDays(1));
@@ -380,8 +416,10 @@ class OrderServiceImplTest {
             when(userMapper.selectById(USER_ID)).thenReturn(user);
             when(orderMapper.selectCount(any())).thenReturn(3L);
 
+            Allure.step("执行查询红点数操作");
             Integer count = orderService.getUnreadOrderCount(USER_ID);
 
+            Allure.step("验证：返回3条未读订单");
             assertEquals(3, count);
         }
 
@@ -389,6 +427,7 @@ class OrderServiceImplTest {
         @Severity(SeverityLevel.CRITICAL)
         @DisplayName("获取红点数 - 用户从未查看过订单，统计所有已发货订单")
         void getUnreadOrderCount_NoLastViewTime() {
+            Allure.step("准备测试数据：用户 lastViewOrdersTime 为 null");
             User user = new User();
             user.setId(USER_ID);
             user.setLastViewOrdersTime(null);
@@ -397,7 +436,6 @@ class OrderServiceImplTest {
             when(orderMapper.selectCount(any())).thenReturn(5L);
 
             Integer count = orderService.getUnreadOrderCount(USER_ID);
-
             assertEquals(5, count);
         }
 
@@ -405,11 +443,11 @@ class OrderServiceImplTest {
         @Severity(SeverityLevel.MINOR)
         @DisplayName("获取红点数 - 用户不存在")
         void getUnreadOrderCount_UserNotFound() {
+            Allure.step("Mock 用户查询返回null");
             when(userMapper.selectById(USER_ID)).thenReturn(null);
             when(orderMapper.selectCount(any())).thenReturn(0L);
 
             Integer count = orderService.getUnreadOrderCount(USER_ID);
-
             assertEquals(0, count);
         }
     }
@@ -420,15 +458,19 @@ class OrderServiceImplTest {
     @Severity(SeverityLevel.NORMAL)
     @DisplayName("标记订单已读 - 更新用户查看时间")
     void markOrdersViewed_Success() {
+        Allure.step("Mock 用户更新返回1");
         when(userMapper.update(any(), any())).thenReturn(1);
 
+        Allure.step("执行标记已读操作");
         orderService.markOrdersViewed(USER_ID);
 
+        Allure.step("验证：已调用 update 方法");
         verify(userMapper, times(1)).update(isNull(), any());
     }
 
     // ==================== 测试数据工厂方法 ====================
 
+    @Step("创建测试购物车项：id={id}, userId={userId}, productId={productId}, qty={quantity}")
     private CartItem createCartItem(Long id, Long userId, Long productId, Integer quantity,
                                     String productName, BigDecimal price) {
         CartItem item = new CartItem();
@@ -441,6 +483,7 @@ class OrderServiceImplTest {
         return item;
     }
 
+    @Step("创建测试商品：id={id}, name={name}, price={price}, stock={stock}, status={status}")
     private Product createProduct(Long id, String name, BigDecimal price, Integer stock, Integer status) {
         Product product = new Product();
         product.setId(id);
@@ -452,6 +495,7 @@ class OrderServiceImplTest {
         return product;
     }
 
+    @Step("创建测试订单：id={id}, userId={userId}, status={status}")
     private Order createOrder(Long id, Long userId, String status) {
         Order order = new Order();
         order.setId(id);
@@ -462,6 +506,7 @@ class OrderServiceImplTest {
         return order;
     }
 
+    @Step("创建测试订单明细：orderId={orderId}, productId={productId}, name={productName}, qty={quantity}")
     private OrderItem createOrderItem(Long orderId, Long productId, String productName, Integer quantity) {
         OrderItem item = new OrderItem();
         item.setOrderId(orderId);
