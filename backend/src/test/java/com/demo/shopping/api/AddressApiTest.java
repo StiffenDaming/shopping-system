@@ -17,7 +17,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import java.util.Arrays;
 import java.util.Collections;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -56,11 +56,11 @@ class AddressApiTest extends BaseApiTest {
             MvcResult result = perform(get("/api/addresses"), userToken());
 
             Allure.step("验证：HTTP 200，返回2条地址");
-            assertEquals(200, result.getResponse().getStatus());
+            assertThat(result.getResponse().getStatus()).isEqualTo(200);
             JsonNode body = objectMapper.readTree(result.getResponse().getContentAsString());
-            assertEquals(200, body.get("code").asInt());
-            assertEquals(2, body.get("data").size());
-            assertEquals("张三", body.get("data").get(0).get("receiverName").asText());
+            assertThat(body.get("code").asInt()).isEqualTo(200);
+            assertThat(body.get("data").size()).isEqualTo(2);
+            assertThat(body.get("data").get(0).get("receiverName").asText()).isEqualTo("张三");
         }
 
         @Test
@@ -73,9 +73,9 @@ class AddressApiTest extends BaseApiTest {
             MvcResult result = perform(get("/api/addresses"), userToken());
 
             JsonNode body = objectMapper.readTree(result.getResponse().getContentAsString());
-            assertEquals(200, body.get("code").asInt());
-            assertTrue(body.get("data").isArray());
-            assertEquals(0, body.get("data").size());
+            assertThat(body.get("code").asInt()).isEqualTo(200);
+            assertThat(body.get("data").isArray()).isTrue();
+            assertThat(body.get("data").size()).isEqualTo(0);
         }
     }
 
@@ -93,11 +93,11 @@ class AddressApiTest extends BaseApiTest {
         MvcResult result = perform(get("/api/addresses/default"), userToken());
 
         Allure.step("验证：HTTP 200，返回默认地址");
-        assertEquals(200, result.getResponse().getStatus());
+        assertThat(result.getResponse().getStatus()).isEqualTo(200);
         JsonNode body = objectMapper.readTree(result.getResponse().getContentAsString());
-        assertEquals(200, body.get("code").asInt());
-        assertEquals("张三", body.get("data").get("receiverName").asText());
-        assertEquals(1, body.get("data").get("isDefault").asInt());
+        assertThat(body.get("code").asInt()).isEqualTo(200);
+        assertThat(body.get("data").get("receiverName").asText()).isEqualTo("张三");
+        assertThat(body.get("data").get("isDefault").asInt()).isEqualTo(1);
     }
 
     // ==================== 新增地址 ====================
@@ -124,10 +124,10 @@ class AddressApiTest extends BaseApiTest {
             MvcResult result = performWithBody(post("/api/addresses"), userToken(), dto);
 
             Allure.step("验证：HTTP 200，提示地址添加成功");
-            assertEquals(200, result.getResponse().getStatus());
+            assertThat(result.getResponse().getStatus()).isEqualTo(200);
             JsonNode body = objectMapper.readTree(result.getResponse().getContentAsString());
-            assertEquals(200, body.get("code").asInt());
-            assertEquals("地址添加成功", body.get("message").asText());
+            assertThat(body.get("code").asInt()).isEqualTo(200);
+            assertThat(body.get("message").asText()).isEqualTo("地址添加成功");
         }
 
         @Test
@@ -144,8 +144,8 @@ class AddressApiTest extends BaseApiTest {
 
             Allure.step("验证：code=400，提示收货人姓名不能为空");
             JsonNode body = objectMapper.readTree(result.getResponse().getContentAsString());
-            assertEquals(400, body.get("code").asInt());
-            assertEquals("收货人姓名不能为空", body.get("message").asText());
+            assertThat(body.get("code").asInt()).isEqualTo(400);
+            assertThat(body.get("message").asText()).isEqualTo("收货人姓名不能为空");
         }
 
         @Test
@@ -162,8 +162,8 @@ class AddressApiTest extends BaseApiTest {
 
             Allure.step("验证：code=400，提示联系电话不能为空");
             JsonNode body = objectMapper.readTree(result.getResponse().getContentAsString());
-            assertEquals(400, body.get("code").asInt());
-            assertEquals("联系电话不能为空", body.get("message").asText());
+            assertThat(body.get("code").asInt()).isEqualTo(400);
+            assertThat(body.get("message").asText()).isEqualTo("联系电话不能为空");
         }
     }
 
@@ -185,10 +185,10 @@ class AddressApiTest extends BaseApiTest {
         MvcResult result = performWithBody(put("/api/addresses/1"), userToken(), dto);
 
         Allure.step("验证：HTTP 200，提示地址修改成功");
-        assertEquals(200, result.getResponse().getStatus());
+        assertThat(result.getResponse().getStatus()).isEqualTo(200);
         JsonNode body = objectMapper.readTree(result.getResponse().getContentAsString());
-        assertEquals(200, body.get("code").asInt());
-        assertEquals("地址修改成功", body.get("message").asText());
+        assertThat(body.get("code").asInt()).isEqualTo(200);
+        assertThat(body.get("message").asText()).isEqualTo("地址修改成功");
     }
 
     // ==================== 删除地址 ====================
@@ -204,10 +204,10 @@ class AddressApiTest extends BaseApiTest {
         MvcResult result = perform(delete("/api/addresses/1"), userToken());
 
         Allure.step("验证：HTTP 200，提示地址已删除");
-        assertEquals(200, result.getResponse().getStatus());
+        assertThat(result.getResponse().getStatus()).isEqualTo(200);
         JsonNode body = objectMapper.readTree(result.getResponse().getContentAsString());
-        assertEquals(200, body.get("code").asInt());
-        assertEquals("地址已删除", body.get("message").asText());
+        assertThat(body.get("code").asInt()).isEqualTo(200);
+        assertThat(body.get("message").asText()).isEqualTo("地址已删除");
     }
 
     // ==================== 设为默认地址 ====================
@@ -223,16 +223,16 @@ class AddressApiTest extends BaseApiTest {
         MvcResult result = perform(put("/api/addresses/1/default"), userToken());
 
         Allure.step("验证：HTTP 200，提示已设为默认地址");
-        assertEquals(200, result.getResponse().getStatus());
+        assertThat(result.getResponse().getStatus()).isEqualTo(200);
         JsonNode body = objectMapper.readTree(result.getResponse().getContentAsString());
-        assertEquals(200, body.get("code").asInt());
-        assertEquals("已设为默认地址", body.get("message").asText());
+        assertThat(body.get("code").asInt()).isEqualTo(200);
+        assertThat(body.get("message").asText()).isEqualTo("已设为默认地址");
     }
 
     // ==================== 测试数据工厂 ====================
 
     private DeliveryAddress createAddress(Long id, String name, String phone,
-                                            String address, Integer isDefault) {
+                                          String address, Integer isDefault) {
         DeliveryAddress addr = new DeliveryAddress();
         addr.setId(id);
         addr.setUserId(2L);

@@ -17,7 +17,7 @@ import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Collections;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -56,14 +56,14 @@ class CartApiTest extends BaseApiTest {
             MvcResult result = perform(get("/api/cart"), userToken());
 
             Allure.step("验证：HTTP 200，返回2条购物车项");
-            assertEquals(200, result.getResponse().getStatus());
+            assertThat(result.getResponse().getStatus()).isEqualTo(200);
             JsonNode body = objectMapper.readTree(result.getResponse().getContentAsString());
-            assertEquals(200, body.get("code").asInt());
-            assertEquals(2, body.get("data").size());
-            assertEquals("iPhone 15", body.get("data").get(0).get("productName").asText());
+            assertThat(body.get("code").asInt()).isEqualTo(200);
+            assertThat(body.get("data").size()).isEqualTo(2);
+            assertThat(body.get("data").get(0).get("productName").asText()).isEqualTo("iPhone 15");
 
             // 如果你想知道 cartService.getCartList(2L) 确实被调用了，可以加一行验证：
-            // 但这属于“二次确认”，不是必须的
+            // 但这属于"二次确认"，不是必须的
             verify(cartService, times(1)).getCartList(2L);
         }
 
@@ -79,9 +79,9 @@ class CartApiTest extends BaseApiTest {
 
             Allure.step("验证：HTTP 200，返回空数组");
             JsonNode body = objectMapper.readTree(result.getResponse().getContentAsString());
-            assertEquals(200, body.get("code").asInt());
-            assertTrue(body.get("data").isArray());
-            assertEquals(0, body.get("data").size());
+            assertThat(body.get("code").asInt()).isEqualTo(200);
+            assertThat(body.get("data").isArray()).isTrue();
+            assertThat(body.get("data").size()).isEqualTo(0);
         }
     }
 
@@ -98,10 +98,10 @@ class CartApiTest extends BaseApiTest {
         MvcResult result = perform(get("/api/cart/count"), userToken());
 
         Allure.step("验证：HTTP 200，返回数量3");
-        assertEquals(200, result.getResponse().getStatus());
+        assertThat(result.getResponse().getStatus()).isEqualTo(200);
         JsonNode body = objectMapper.readTree(result.getResponse().getContentAsString());
-        assertEquals(200, body.get("code").asInt());
-        assertEquals(3, body.get("data").asInt());
+        assertThat(body.get("code").asInt()).isEqualTo(200);
+        assertThat(body.get("data").asInt()).isEqualTo(3);
     }
 
     // ==================== 加入购物车 ====================
@@ -124,10 +124,10 @@ class CartApiTest extends BaseApiTest {
                     userToken());
 
             Allure.step("验证：HTTP 200，提示已加入购物车");
-            assertEquals(200, result.getResponse().getStatus());
+            assertThat(result.getResponse().getStatus()).isEqualTo(200);
             JsonNode body = objectMapper.readTree(result.getResponse().getContentAsString());
-            assertEquals(200, body.get("code").asInt());
-            assertEquals("已加入购物车", body.get("message").asText());
+            assertThat(body.get("code").asInt()).isEqualTo(200);
+            assertThat(body.get("message").asText()).isEqualTo("已加入购物车");
         }
 
         @Test
@@ -141,7 +141,7 @@ class CartApiTest extends BaseApiTest {
 
             Allure.step("验证：HTTP 200，加购成功");
             JsonNode body = objectMapper.readTree(result.getResponse().getContentAsString());
-            assertEquals(200, body.get("code").asInt());
+            assertThat(body.get("code").asInt()).isEqualTo(200);
             verify(cartService).addToCart(eq(2L), eq(10L), eq(1));
         }
     }
@@ -161,10 +161,10 @@ class CartApiTest extends BaseApiTest {
                 userToken());
 
         Allure.step("验证：HTTP 200，提示数量已更新");
-        assertEquals(200, result.getResponse().getStatus());
+        assertThat(result.getResponse().getStatus()).isEqualTo(200);
         JsonNode body = objectMapper.readTree(result.getResponse().getContentAsString());
-        assertEquals(200, body.get("code").asInt());
-        assertEquals("数量已更新", body.get("message").asText());
+        assertThat(body.get("code").asInt()).isEqualTo(200);
+        assertThat(body.get("message").asText()).isEqualTo("数量已更新");
     }
 
     // ==================== 删除购物车项 ====================
@@ -180,10 +180,10 @@ class CartApiTest extends BaseApiTest {
         MvcResult result = perform(delete("/api/cart/1"), userToken());
 
         Allure.step("验证：HTTP 200，提示已移出购物车");
-        assertEquals(200, result.getResponse().getStatus());
+        assertThat(result.getResponse().getStatus()).isEqualTo(200);
         JsonNode body = objectMapper.readTree(result.getResponse().getContentAsString());
-        assertEquals(200, body.get("code").asInt());
-        assertEquals("已移出购物车", body.get("message").asText());
+        assertThat(body.get("code").asInt()).isEqualTo(200);
+        assertThat(body.get("message").asText()).isEqualTo("已移出购物车");
     }
 
     // ==================== 未授权访问 ====================
@@ -197,9 +197,9 @@ class CartApiTest extends BaseApiTest {
         MvcResult result = perform(get("/api/cart"), null);
 
         Allure.step("验证：HTTP 401，提示未登录");
-        assertEquals(401, result.getResponse().getStatus());
+        assertThat(result.getResponse().getStatus()).isEqualTo(401);
         JsonNode body = objectMapper.readTree(result.getResponse().getContentAsString());
-        assertEquals(401, body.get("code").asInt());
+        assertThat(body.get("code").asInt()).isEqualTo(401);
         verify(cartService, never()).getCartList(any());
     }
 

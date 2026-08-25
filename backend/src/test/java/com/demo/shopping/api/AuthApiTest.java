@@ -16,7 +16,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.web.servlet.MvcResult;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -63,12 +63,12 @@ class AuthApiTest extends BaseApiTest {
             MvcResult result = performWithBody(post("/api/auth/login"), null, dto);
 
             Allure.step("验证：HTTP 200，code=200，返回 token 和用户信息");
-            assertEquals(200, result.getResponse().getStatus());
+            assertThat(result.getResponse().getStatus()).isEqualTo(200);
             JsonNode body = objectMapper.readTree(result.getResponse().getContentAsString());
-            assertEquals(200, body.get("code").asInt());
-            assertEquals("登录成功", body.get("message").asText());
-            assertNotNull(body.get("data").get("token").asText());
-            assertEquals("admin", body.get("data").get("username").asText());
+            assertThat(body.get("code").asInt()).isEqualTo(200);
+            assertThat(body.get("message").asText()).isEqualTo("登录成功");
+            assertThat(body.get("data").get("token").asText()).isNotNull();
+            assertThat(body.get("data").get("username").asText()).isEqualTo("admin");
         }
 
         @Test
@@ -84,8 +84,8 @@ class AuthApiTest extends BaseApiTest {
 
             Allure.step("验证：code=400，提示用户名不能为空");
             JsonNode body = objectMapper.readTree(result.getResponse().getContentAsString());
-            assertEquals(400, body.get("code").asInt());
-            assertEquals("用户名不能为空", body.get("message").asText());
+            assertThat(body.get("code").asInt()).isEqualTo(400);
+            assertThat(body.get("message").asText()).isEqualTo("用户名不能为空");
         }
 
         @Test
@@ -101,8 +101,8 @@ class AuthApiTest extends BaseApiTest {
 
             Allure.step("验证：code=400，提示密码不能为空");
             JsonNode body = objectMapper.readTree(result.getResponse().getContentAsString());
-            assertEquals(400, body.get("code").asInt());
-            assertEquals("密码不能为空", body.get("message").asText());
+            assertThat(body.get("code").asInt()).isEqualTo(400);
+            assertThat(body.get("message").asText()).isEqualTo("密码不能为空");
         }
     }
 
@@ -129,10 +129,10 @@ class AuthApiTest extends BaseApiTest {
             MvcResult result = performWithBody(post("/api/auth/register"), null, dto);
 
             Allure.step("验证：HTTP 200，code=200，提示注册成功");
-            assertEquals(200, result.getResponse().getStatus());
+            assertThat(result.getResponse().getStatus()).isEqualTo(200);
             JsonNode body = objectMapper.readTree(result.getResponse().getContentAsString());
-            assertEquals(200, body.get("code").asInt());
-            assertEquals("注册成功", body.get("message").asText());
+            assertThat(body.get("code").asInt()).isEqualTo(200);
+            assertThat(body.get("message").asText()).isEqualTo("注册成功");
         }
 
         @Test
@@ -148,8 +148,8 @@ class AuthApiTest extends BaseApiTest {
 
             Allure.step("验证：code=400，提示密码长度6-20个字符");
             JsonNode body = objectMapper.readTree(result.getResponse().getContentAsString());
-            assertEquals(400, body.get("code").asInt());
-            assertEquals("密码长度6-20个字符", body.get("message").asText());
+            assertThat(body.get("code").asInt()).isEqualTo(400);
+            assertThat(body.get("message").asText()).isEqualTo("密码长度6-20个字符");
         }
     }
 
@@ -178,13 +178,13 @@ class AuthApiTest extends BaseApiTest {
             MvcResult result = perform(get("/api/auth/info"), userToken());
 
             Allure.step("验证：HTTP 200，返回用户信息");
-            assertEquals(200, result.getResponse().getStatus());
+            assertThat(result.getResponse().getStatus()).isEqualTo(200);
             JsonNode body = objectMapper.readTree(result.getResponse().getContentAsString());
-            assertEquals(200, body.get("code").asInt());
-            assertEquals("testuser", body.get("data").get("username").asText());
-            assertEquals("USER", body.get("data").get("role").asText());
+            assertThat(body.get("code").asInt()).isEqualTo(200);
+            assertThat(body.get("data").get("username").asText()).isEqualTo("testuser");
+            assertThat(body.get("data").get("role").asText()).isEqualTo("USER");
             // password 字段应被 @JsonIgnore 排除
-            assertNull(body.get("data").get("password"));
+            assertThat(body.get("data").get("password")).isNull();
         }
 
         @Test
@@ -196,9 +196,9 @@ class AuthApiTest extends BaseApiTest {
             MvcResult result = perform(get("/api/auth/info"), null);
 
             Allure.step("验证：HTTP 401，提示未登录");
-            assertEquals(401, result.getResponse().getStatus());
+            assertThat(result.getResponse().getStatus()).isEqualTo(401);
             JsonNode body = objectMapper.readTree(result.getResponse().getContentAsString());
-            assertEquals(401, body.get("code").asInt());
+            assertThat(body.get("code").asInt()).isEqualTo(401);
         }
     }
 }

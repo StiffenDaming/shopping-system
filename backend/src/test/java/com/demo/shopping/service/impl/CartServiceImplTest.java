@@ -16,7 +16,8 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import java.math.BigDecimal;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
@@ -92,7 +93,7 @@ class CartServiceImplTest {
             cartService.addToCart(USER_ID, PRODUCT_ID, 2);
 
             Allure.step("验证：数量更新为5（3+2），未新增记录");
-            assertEquals(5, existingItem.getQuantity());
+            assertThat(existingItem.getQuantity()).isEqualTo(5);
             verify(cartItemMapper, times(1)).updateById(existingItem);
             verify(cartItemMapper, never()).insert(any());
         }
@@ -110,7 +111,7 @@ class CartServiceImplTest {
                     () -> cartService.addToCart(USER_ID, PRODUCT_ID, 1));
 
             Allure.step("验证异常消息为'商品不存在或已下架'");
-            assertEquals("商品不存在或已下架", ex.getMessage());
+            assertThat(ex.getMessage()).isEqualTo("商品不存在或已下架");
         }
 
         @Test
@@ -126,7 +127,7 @@ class CartServiceImplTest {
                     () -> cartService.addToCart(USER_ID, PRODUCT_ID, 10));
 
             Allure.step("验证异常消息包含'库存不足'");
-            assertTrue(ex.getMessage().contains("库存不足"));
+            assertThat(ex.getMessage()).contains("库存不足");
         }
 
         @Test
@@ -147,7 +148,7 @@ class CartServiceImplTest {
             Allure.step("执行加购操作，预期抛出超出库存异常");
             BusinessException ex = assertThrows(BusinessException.class,
                     () -> cartService.addToCart(USER_ID, PRODUCT_ID, 3));
-            assertTrue(ex.getMessage().contains("超出库存"));
+            assertThat(ex.getMessage()).contains("超出库存");
         }
 
         @Test
@@ -193,7 +194,7 @@ class CartServiceImplTest {
             cartService.updateQuantity(USER_ID, CART_ITEM_ID, 5);
 
             Allure.step("验证：数量已更新为5");
-            assertEquals(5, item.getQuantity());
+            assertThat(item.getQuantity()).isEqualTo(5);
             verify(cartItemMapper).updateById(item);
         }
 
@@ -215,7 +216,7 @@ class CartServiceImplTest {
             Allure.step("执行修改操作，预期抛出超出库存异常");
             BusinessException ex = assertThrows(BusinessException.class,
                     () -> cartService.updateQuantity(USER_ID, CART_ITEM_ID, 10));
-            assertTrue(ex.getMessage().contains("超出库存"));
+            assertThat(ex.getMessage()).contains("超出库存");
         }
 
         @Test
@@ -225,7 +226,7 @@ class CartServiceImplTest {
             Allure.step("尝试修改数量为0");
             BusinessException ex = assertThrows(BusinessException.class,
                     () -> cartService.updateQuantity(USER_ID, CART_ITEM_ID, 0));
-            assertEquals("数量必须大于0", ex.getMessage());
+            assertThat(ex.getMessage()).isEqualTo("数量必须大于0");
         }
 
         @Test
@@ -237,7 +238,7 @@ class CartServiceImplTest {
 
             BusinessException ex = assertThrows(BusinessException.class,
                     () -> cartService.updateQuantity(USER_ID, CART_ITEM_ID, 5));
-            assertEquals("购物车项不存在", ex.getMessage());
+            assertThat(ex.getMessage()).isEqualTo("购物车项不存在");
         }
 
         @Test
@@ -254,7 +255,7 @@ class CartServiceImplTest {
 
             BusinessException ex = assertThrows(BusinessException.class,
                     () -> cartService.updateQuantity(USER_ID, CART_ITEM_ID, 5));
-            assertEquals("购物车项不存在", ex.getMessage());
+            assertThat(ex.getMessage()).isEqualTo("购物车项不存在");
         }
     }
 
@@ -290,7 +291,7 @@ class CartServiceImplTest {
 
             BusinessException ex = assertThrows(BusinessException.class,
                     () -> cartService.removeFromCart(USER_ID, CART_ITEM_ID));
-            assertEquals("购物车项不存在", ex.getMessage());
+            assertThat(ex.getMessage()).isEqualTo("购物车项不存在");
         }
 
         @Test
@@ -305,7 +306,7 @@ class CartServiceImplTest {
 
             BusinessException ex = assertThrows(BusinessException.class,
                     () -> cartService.removeFromCart(USER_ID, CART_ITEM_ID));
-            assertEquals("购物车项不存在", ex.getMessage());
+            assertThat(ex.getMessage()).isEqualTo("购物车项不存在");
         }
     }
 
@@ -322,7 +323,7 @@ class CartServiceImplTest {
         Integer count = cartService.getCartCount(USER_ID);
 
         Allure.step("验证：返回数量为3");
-        assertEquals(3, count);
+        assertThat(count).isEqualTo(3);
     }
 
     // ==================== 测试数据工厂方法 ====================

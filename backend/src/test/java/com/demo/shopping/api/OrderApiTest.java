@@ -21,7 +21,7 @@ import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Collections;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -64,11 +64,11 @@ class OrderApiTest extends BaseApiTest {
             MvcResult result = performWithBody(post("/api/orders/checkout"), userToken(), dto);
 
             Allure.step("验证：HTTP 200，返回订单号");
-            assertEquals(200, result.getResponse().getStatus());
+            assertThat(result.getResponse().getStatus()).isEqualTo(200);
             JsonNode body = objectMapper.readTree(result.getResponse().getContentAsString());
-            assertEquals(200, body.get("code").asInt());
-            assertEquals("下单成功", body.get("message").asText());
-            assertEquals("ORD20260101001", body.get("data").asText());
+            assertThat(body.get("code").asInt()).isEqualTo(200);
+            assertThat(body.get("message").asText()).isEqualTo("下单成功");
+            assertThat(body.get("data").asText()).isEqualTo("ORD20260101001");
         }
 
         @Test
@@ -85,8 +85,8 @@ class OrderApiTest extends BaseApiTest {
 
             Allure.step("验证：code=400，提示收货人姓名不能为空");
             JsonNode body = objectMapper.readTree(result.getResponse().getContentAsString());
-            assertEquals(400, body.get("code").asInt());
-            assertEquals("收货人姓名不能为空", body.get("message").asText());
+            assertThat(body.get("code").asInt()).isEqualTo(400);
+            assertThat(body.get("message").asText()).isEqualTo("收货人姓名不能为空");
         }
     }
 
@@ -115,11 +115,11 @@ class OrderApiTest extends BaseApiTest {
                     userToken());
 
             Allure.step("验证：HTTP 200，返回2条订单");
-            assertEquals(200, result.getResponse().getStatus());
+            assertThat(result.getResponse().getStatus()).isEqualTo(200);
             JsonNode body = objectMapper.readTree(result.getResponse().getContentAsString());
-            assertEquals(200, body.get("code").asInt());
-            assertEquals(2, body.get("data").get("records").size());
-            assertEquals("ORD001", body.get("data").get("records").get(0).get("orderNo").asText());
+            assertThat(body.get("code").asInt()).isEqualTo(200);
+            assertThat(body.get("data").get("records").size()).isEqualTo(2);
+            assertThat(body.get("data").get("records").get(0).get("orderNo").asText()).isEqualTo("ORD001");
         }
 
         @Test
@@ -140,8 +140,8 @@ class OrderApiTest extends BaseApiTest {
 
             Allure.step("验证：HTTP 200，返回1条 PENDING 订单");
             JsonNode body = objectMapper.readTree(result.getResponse().getContentAsString());
-            assertEquals(200, body.get("code").asInt());
-            assertEquals(1, body.get("data").get("records").size());
+            assertThat(body.get("code").asInt()).isEqualTo(200);
+            assertThat(body.get("data").get("records").size()).isEqualTo(1);
         }
     }
 
@@ -167,12 +167,12 @@ class OrderApiTest extends BaseApiTest {
         MvcResult result = perform(get("/api/orders/1"), userToken());
 
         Allure.step("验证：HTTP 200，返回订单详情含明细");
-        assertEquals(200, result.getResponse().getStatus());
+        assertThat(result.getResponse().getStatus()).isEqualTo(200);
         JsonNode body = objectMapper.readTree(result.getResponse().getContentAsString());
-        assertEquals(200, body.get("code").asInt());
-        assertEquals("ORD001", body.get("data").get("orderNo").asText());
-        assertEquals(1, body.get("data").get("items").size());
-        assertEquals("iPhone 15", body.get("data").get("items").get(0).get("productName").asText());
+        assertThat(body.get("code").asInt()).isEqualTo(200);
+        assertThat(body.get("data").get("orderNo").asText()).isEqualTo("ORD001");
+        assertThat(body.get("data").get("items").size()).isEqualTo(1);
+        assertThat(body.get("data").get("items").get(0).get("productName").asText()).isEqualTo("iPhone 15");
     }
 
     // ==================== 取消订单 ====================
@@ -188,10 +188,10 @@ class OrderApiTest extends BaseApiTest {
         MvcResult result = perform(put("/api/orders/1/cancel"), userToken());
 
         Allure.step("验证：HTTP 200，提示订单已取消");
-        assertEquals(200, result.getResponse().getStatus());
+        assertThat(result.getResponse().getStatus()).isEqualTo(200);
         JsonNode body = objectMapper.readTree(result.getResponse().getContentAsString());
-        assertEquals(200, body.get("code").asInt());
-        assertEquals("订单已取消", body.get("message").asText());
+        assertThat(body.get("code").asInt()).isEqualTo(200);
+        assertThat(body.get("message").asText()).isEqualTo("订单已取消");
     }
 
     // ==================== 确认收货 ====================
@@ -207,10 +207,10 @@ class OrderApiTest extends BaseApiTest {
         MvcResult result = perform(put("/api/orders/1/confirm"), userToken());
 
         Allure.step("验证：HTTP 200，提示已确认收货");
-        assertEquals(200, result.getResponse().getStatus());
+        assertThat(result.getResponse().getStatus()).isEqualTo(200);
         JsonNode body = objectMapper.readTree(result.getResponse().getContentAsString());
-        assertEquals(200, body.get("code").asInt());
-        assertEquals("已确认收货", body.get("message").asText());
+        assertThat(body.get("code").asInt()).isEqualTo(200);
+        assertThat(body.get("message").asText()).isEqualTo("已确认收货");
     }
 
     // ==================== 红点提示 ====================
@@ -231,10 +231,10 @@ class OrderApiTest extends BaseApiTest {
             MvcResult result = perform(get("/api/orders/unread-count"), userToken());
 
             Allure.step("验证：HTTP 200，返回未读数2");
-            assertEquals(200, result.getResponse().getStatus());
+            assertThat(result.getResponse().getStatus()).isEqualTo(200);
             JsonNode body = objectMapper.readTree(result.getResponse().getContentAsString());
-            assertEquals(200, body.get("code").asInt());
-            assertEquals(2, body.get("data").asInt());
+            assertThat(body.get("code").asInt()).isEqualTo(200);
+            assertThat(body.get("data").asInt()).isEqualTo(2);
         }
 
         @Test
@@ -248,9 +248,9 @@ class OrderApiTest extends BaseApiTest {
             MvcResult result = perform(put("/api/orders/mark-read"), userToken());
 
             Allure.step("验证：HTTP 200，操作成功");
-            assertEquals(200, result.getResponse().getStatus());
+            assertThat(result.getResponse().getStatus()).isEqualTo(200);
             JsonNode body = objectMapper.readTree(result.getResponse().getContentAsString());
-            assertEquals(200, body.get("code").asInt());
+            assertThat(body.get("code").asInt()).isEqualTo(200);
         }
     }
 
@@ -278,10 +278,10 @@ class OrderApiTest extends BaseApiTest {
                     adminToken());
 
             Allure.step("验证：HTTP 200，返回1条订单");
-            assertEquals(200, result.getResponse().getStatus());
+            assertThat(result.getResponse().getStatus()).isEqualTo(200);
             JsonNode body = objectMapper.readTree(result.getResponse().getContentAsString());
-            assertEquals(200, body.get("code").asInt());
-            assertEquals(1, body.get("data").get("records").size());
+            assertThat(body.get("code").asInt()).isEqualTo(200);
+            assertThat(body.get("data").get("records").size()).isEqualTo(1);
         }
 
         @Test
@@ -295,10 +295,10 @@ class OrderApiTest extends BaseApiTest {
             MvcResult result = perform(put("/api/orders/admin/1/ship"), adminToken());
 
             Allure.step("验证：HTTP 200，提示订单已发货");
-            assertEquals(200, result.getResponse().getStatus());
+            assertThat(result.getResponse().getStatus()).isEqualTo(200);
             JsonNode body = objectMapper.readTree(result.getResponse().getContentAsString());
-            assertEquals(200, body.get("code").asInt());
-            assertEquals("订单已发货", body.get("message").asText());
+            assertThat(body.get("code").asInt()).isEqualTo(200);
+            assertThat(body.get("message").asText()).isEqualTo("订单已发货");
         }
 
         @Test
@@ -312,10 +312,10 @@ class OrderApiTest extends BaseApiTest {
             MvcResult result = perform(put("/api/orders/admin/1/complete"), adminToken());
 
             Allure.step("验证：HTTP 200，提示订单已完成");
-            assertEquals(200, result.getResponse().getStatus());
+            assertThat(result.getResponse().getStatus()).isEqualTo(200);
             JsonNode body = objectMapper.readTree(result.getResponse().getContentAsString());
-            assertEquals(200, body.get("code").asInt());
-            assertEquals("订单已完成", body.get("message").asText());
+            assertThat(body.get("code").asInt()).isEqualTo(200);
+            assertThat(body.get("message").asText()).isEqualTo("订单已完成");
         }
 
         @Test
@@ -327,8 +327,8 @@ class OrderApiTest extends BaseApiTest {
 
             Allure.step("验证：code=403，提示无权限");
             JsonNode body = objectMapper.readTree(result.getResponse().getContentAsString());
-            assertEquals(403, body.get("code").asInt());
-            assertEquals("无权限，仅管理员可操作", body.get("message").asText());
+            assertThat(body.get("code").asInt()).isEqualTo(403);
+            assertThat(body.get("message").asText()).isEqualTo("无权限，仅管理员可操作");
             // 管理员发货方法不应被调用
             verify(orderService, never()).shipOrder(any());
         }

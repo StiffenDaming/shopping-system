@@ -20,7 +20,8 @@ import org.springframework.test.util.ReflectionTestUtils;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
@@ -70,8 +71,8 @@ class DeliveryAddressServiceImplTest {
         List<DeliveryAddress> result = addressService.listByUserId(USER_ID);
 
         Allure.step("验证：返回2条记录，默认地址排在第一位");
-        assertEquals(2, result.size());
-        assertEquals(1, result.get(0).getIsDefault());
+        assertThat(result).hasSize(2);
+        assertThat(result.get(0).getIsDefault()).isEqualTo(1);
     }
 
     @Test
@@ -86,8 +87,8 @@ class DeliveryAddressServiceImplTest {
         DeliveryAddress result = addressService.getDefaultAddress(USER_ID);
 
         Allure.step("验证：返回的地址 isDefault=1");
-        assertNotNull(result);
-        assertEquals(1, result.getIsDefault());
+        assertThat(result).isNotNull();
+        assertThat(result.getIsDefault()).isEqualTo(1);
     }
 
     @Test
@@ -98,7 +99,7 @@ class DeliveryAddressServiceImplTest {
         when(addressMapper.selectOne(any())).thenReturn(null);
 
         DeliveryAddress result = addressService.getDefaultAddress(USER_ID);
-        assertNull(result);
+        assertThat(result).isNull();
     }
 
     // ==================== 新增地址 ====================
@@ -189,9 +190,9 @@ class DeliveryAddressServiceImplTest {
             addressService.updateAddress(USER_ID, ADDRESS_ID, dto);
 
             Allure.step("验证：姓名、电话、地址均已更新");
-            assertEquals("李四", existing.getReceiverName());
-            assertEquals("13900139000", existing.getReceiverPhone());
-            assertEquals("上海市浦东新区", existing.getReceiverAddress());
+            assertThat(existing.getReceiverName()).isEqualTo("李四");
+            assertThat(existing.getReceiverPhone()).isEqualTo("13900139000");
+            assertThat(existing.getReceiverAddress()).isEqualTo("上海市浦东新区");
             verify(addressMapper).updateById(existing);
         }
 
@@ -215,7 +216,7 @@ class DeliveryAddressServiceImplTest {
             Allure.step("验证：先清除旧默认（update 1次），再更新地址（updateById 1次）");
             verify(addressMapper, times(1)).update(isNull(), any());
             verify(addressMapper).updateById(existing);
-            assertEquals(1, existing.getIsDefault());
+            assertThat(existing.getIsDefault()).isEqualTo(1);
         }
 
         @Test
@@ -232,7 +233,7 @@ class DeliveryAddressServiceImplTest {
 
             BusinessException ex = assertThrows(BusinessException.class,
                     () -> addressService.updateAddress(USER_ID, ADDRESS_ID, dto));
-            assertEquals("收货地址不存在", ex.getMessage());
+            assertThat(ex.getMessage()).isEqualTo("收货地址不存在");
         }
 
         @Test
@@ -250,7 +251,7 @@ class DeliveryAddressServiceImplTest {
 
             BusinessException ex = assertThrows(BusinessException.class,
                     () -> addressService.updateAddress(USER_ID, ADDRESS_ID, dto));
-            assertEquals("无权操作此收货地址", ex.getMessage());
+            assertThat(ex.getMessage()).isEqualTo("无权操作此收货地址");
         }
     }
 
@@ -285,7 +286,7 @@ class DeliveryAddressServiceImplTest {
 
             BusinessException ex = assertThrows(BusinessException.class,
                     () -> addressService.deleteAddress(USER_ID, ADDRESS_ID));
-            assertEquals("收货地址不存在", ex.getMessage());
+            assertThat(ex.getMessage()).isEqualTo("收货地址不存在");
         }
 
         @Test
@@ -298,7 +299,7 @@ class DeliveryAddressServiceImplTest {
 
             BusinessException ex = assertThrows(BusinessException.class,
                     () -> addressService.deleteAddress(USER_ID, ADDRESS_ID));
-            assertEquals("无权操作此收货地址", ex.getMessage());
+            assertThat(ex.getMessage()).isEqualTo("无权操作此收货地址");
         }
     }
 
@@ -333,7 +334,7 @@ class DeliveryAddressServiceImplTest {
 
             BusinessException ex = assertThrows(BusinessException.class,
                     () -> addressService.setDefault(USER_ID, ADDRESS_ID));
-            assertEquals("收货地址不存在", ex.getMessage());
+            assertThat(ex.getMessage()).isEqualTo("收货地址不存在");
         }
 
         @Test
@@ -346,7 +347,7 @@ class DeliveryAddressServiceImplTest {
 
             BusinessException ex = assertThrows(BusinessException.class,
                     () -> addressService.setDefault(USER_ID, ADDRESS_ID));
-            assertEquals("无权操作此收货地址", ex.getMessage());
+            assertThat(ex.getMessage()).isEqualTo("无权操作此收货地址");
         }
     }
 

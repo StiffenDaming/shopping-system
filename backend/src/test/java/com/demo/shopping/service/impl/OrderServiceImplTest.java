@@ -28,7 +28,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
@@ -113,8 +114,8 @@ class OrderServiceImplTest {
             String orderNo = orderService.checkout(USER_ID, dto);
 
             Allure.step("验证：订单号不为空且以ORD开头");
-            assertNotNull(orderNo);
-            assertTrue(orderNo.startsWith("ORD"));
+            assertThat(orderNo).isNotNull();
+            assertThat(orderNo).startsWith("ORD");
 
             Allure.step("验证：订单已插入1次，明细已插入2次，库存已扣减2次，购物车已清空");
             verify(orderMapper, times(1)).insert(any(Order.class));
@@ -139,7 +140,7 @@ class OrderServiceImplTest {
                     () -> orderService.checkout(USER_ID, dto));
 
             Allure.step("验证异常消息为'购物车为空，无法下单'");
-            assertEquals("购物车为空，无法下单", ex.getMessage());
+            assertThat(ex.getMessage()).isEqualTo("购物车为空，无法下单");
         }
 
         @Test
@@ -160,7 +161,7 @@ class OrderServiceImplTest {
 
             BusinessException ex = assertThrows(BusinessException.class,
                     () -> orderService.checkout(USER_ID, dto));
-            assertTrue(ex.getMessage().contains("不存在或已下架"));
+            assertThat(ex.getMessage()).contains("不存在或已下架");
         }
 
         @Test
@@ -181,7 +182,7 @@ class OrderServiceImplTest {
 
             BusinessException ex = assertThrows(BusinessException.class,
                     () -> orderService.checkout(USER_ID, dto));
-            assertTrue(ex.getMessage().contains("库存不足"));
+            assertThat(ex.getMessage()).contains("库存不足");
         }
     }
 
@@ -213,11 +214,11 @@ class OrderServiceImplTest {
             orderService.cancelOrder(USER_ID, ORDER_ID);
 
             Allure.step("验证：商品A库存恢复为12（10+2），商品B库存恢复为6（5+1）");
-            assertEquals(12, productA.getStock());
-            assertEquals(6, productB.getStock());
+            assertThat(productA.getStock()).isEqualTo(12);
+            assertThat(productB.getStock()).isEqualTo(6);
 
             Allure.step("验证：订单状态变为CANCELLED");
-            assertEquals("CANCELLED", order.getStatus());
+            assertThat(order.getStatus()).isEqualTo("CANCELLED");
             verify(orderMapper).updateById(order);
             verify(productMapper, times(2)).updateById(any(Product.class));
         }
@@ -232,7 +233,7 @@ class OrderServiceImplTest {
 
             BusinessException ex = assertThrows(BusinessException.class,
                     () -> orderService.cancelOrder(USER_ID, ORDER_ID));
-            assertEquals("只能取消待发货订单", ex.getMessage());
+            assertThat(ex.getMessage()).isEqualTo("只能取消待发货订单");
         }
 
         @Test
@@ -245,7 +246,7 @@ class OrderServiceImplTest {
 
             BusinessException ex = assertThrows(BusinessException.class,
                     () -> orderService.cancelOrder(USER_ID, ORDER_ID));
-            assertEquals("无权操作此订单", ex.getMessage());
+            assertThat(ex.getMessage()).isEqualTo("无权操作此订单");
         }
 
         @Test
@@ -257,7 +258,7 @@ class OrderServiceImplTest {
 
             BusinessException ex = assertThrows(BusinessException.class,
                     () -> orderService.cancelOrder(USER_ID, ORDER_ID));
-            assertEquals("订单不存在", ex.getMessage());
+            assertThat(ex.getMessage()).isEqualTo("订单不存在");
         }
     }
 
@@ -280,7 +281,7 @@ class OrderServiceImplTest {
             orderService.confirmReceipt(USER_ID, ORDER_ID);
 
             Allure.step("验证：订单状态变为COMPLETED");
-            assertEquals("COMPLETED", order.getStatus());
+            assertThat(order.getStatus()).isEqualTo("COMPLETED");
             verify(orderMapper).updateById(order);
         }
 
@@ -294,7 +295,7 @@ class OrderServiceImplTest {
 
             BusinessException ex = assertThrows(BusinessException.class,
                     () -> orderService.confirmReceipt(USER_ID, ORDER_ID));
-            assertEquals("只能确认已发货的订单", ex.getMessage());
+            assertThat(ex.getMessage()).isEqualTo("只能确认已发货的订单");
         }
 
         @Test
@@ -307,7 +308,7 @@ class OrderServiceImplTest {
 
             BusinessException ex = assertThrows(BusinessException.class,
                     () -> orderService.confirmReceipt(USER_ID, ORDER_ID));
-            assertEquals("无权操作此订单", ex.getMessage());
+            assertThat(ex.getMessage()).isEqualTo("无权操作此订单");
         }
     }
 
@@ -330,7 +331,7 @@ class OrderServiceImplTest {
             orderService.shipOrder(ORDER_ID);
 
             Allure.step("验证：订单状态变为SHIPPED");
-            assertEquals("SHIPPED", order.getStatus());
+            assertThat(order.getStatus()).isEqualTo("SHIPPED");
             verify(orderMapper).updateById(order);
         }
 
@@ -344,7 +345,7 @@ class OrderServiceImplTest {
 
             BusinessException ex = assertThrows(BusinessException.class,
                     () -> orderService.shipOrder(ORDER_ID));
-            assertEquals("只能对待发货订单进行发货操作", ex.getMessage());
+            assertThat(ex.getMessage()).isEqualTo("只能对待发货订单进行发货操作");
         }
 
         @Test
@@ -356,7 +357,7 @@ class OrderServiceImplTest {
 
             BusinessException ex = assertThrows(BusinessException.class,
                     () -> orderService.shipOrder(ORDER_ID));
-            assertEquals("订单不存在", ex.getMessage());
+            assertThat(ex.getMessage()).isEqualTo("订单不存在");
         }
     }
 
@@ -379,7 +380,7 @@ class OrderServiceImplTest {
             orderService.adminCompleteOrder(ORDER_ID);
 
             Allure.step("验证：订单状态变为COMPLETED");
-            assertEquals("COMPLETED", order.getStatus());
+            assertThat(order.getStatus()).isEqualTo("COMPLETED");
             verify(orderMapper).updateById(order);
         }
 
@@ -393,7 +394,7 @@ class OrderServiceImplTest {
 
             BusinessException ex = assertThrows(BusinessException.class,
                     () -> orderService.adminCompleteOrder(ORDER_ID));
-            assertEquals("只能对已发货订单进行强制完成操作", ex.getMessage());
+            assertThat(ex.getMessage()).isEqualTo("只能对已发货订单进行强制完成操作");
         }
     }
 
@@ -420,7 +421,7 @@ class OrderServiceImplTest {
             Integer count = orderService.getUnreadOrderCount(USER_ID);
 
             Allure.step("验证：返回3条未读订单");
-            assertEquals(3, count);
+            assertThat(count).isEqualTo(3);
         }
 
         @Test
@@ -436,7 +437,7 @@ class OrderServiceImplTest {
             when(orderMapper.selectCount(any())).thenReturn(5L);
 
             Integer count = orderService.getUnreadOrderCount(USER_ID);
-            assertEquals(5, count);
+            assertThat(count).isEqualTo(5);
         }
 
         @Test
@@ -448,7 +449,7 @@ class OrderServiceImplTest {
             when(orderMapper.selectCount(any())).thenReturn(0L);
 
             Integer count = orderService.getUnreadOrderCount(USER_ID);
-            assertEquals(0, count);
+            assertThat(count).isEqualTo(0);
         }
     }
 
