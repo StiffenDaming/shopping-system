@@ -13,6 +13,21 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
+// ==================== Mock 调用链路：====================
+// 测试方法调用 perform(get("/api/cart"), userToken())
+//     ↓
+// BaseApiTest.perform() 添加 Authorization 头
+//     ↓
+// mockMvc.perform(builder)  —— 这是 Spring 的 MockMvc，模拟 HTTP 请求
+//     ↓
+// CartController 被调用，处理请求
+//     ↓
+// CartController 调用 cartService.getCartList(2L)  ← 这里被 Mock 拦截，返回预设数据
+//     ↓
+// 返回 JSON 响应
+//     ↓
+// 测试方法验证响应内容
+
 /**
  * API 集成测试基类
  * 提供 MockMvc 基础设施、JWT Token 生成、Allure HTTP 请求/响应附件
@@ -87,6 +102,15 @@ public abstract class BaseApiTest {
         attachHttpExchange(result);
         return result;
     }
+//    mock 有两层：
+//    层	    类	                    作用
+//    MockMvc	Spring 的 MockMvc	    模拟 HTTP 请求/响应，不启动真实服务器
+//    Mockito	@MockBean CartService	模拟 Service 层，不调用真实业务逻辑
+//
+//    请求的模拟是 MockMvc 做的，数据的模拟是 Mockito 做的。
+//    例如，我们调用 performWithBody 方法时，会先将请求体转换为 JSON 字符串，然后使用 MockMvc 的 perform 方法执行请求。
+//    这样，MockMvc 就会模拟 HTTP 请求，而数据的模拟则是 Mockito 做的，它会根据我们配置的 MockBean 来返回预设的数据。
+
 
     /**
      * 执行带 JSON Body 的请求并记录到 Allure

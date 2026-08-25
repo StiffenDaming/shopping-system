@@ -61,6 +61,10 @@ class CartApiTest extends BaseApiTest {
             assertEquals(200, body.get("code").asInt());
             assertEquals(2, body.get("data").size());
             assertEquals("iPhone 15", body.get("data").get(0).get("productName").asText());
+
+            // 如果你想知道 cartService.getCartList(2L) 确实被调用了，可以加一行验证：
+            // 但这属于“二次确认”，不是必须的
+            verify(cartService, times(1)).getCartList(2L);
         }
 
         @Test
