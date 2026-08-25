@@ -45,8 +45,8 @@ public class ProductController {
 
     @GetMapping("/admin")
     public Result<IPage<Product>> adminList(@RequestParam(defaultValue = "1") Integer page,
-                                             @RequestParam(defaultValue = "10") Integer size,
-                                             @RequestParam(required = false) String keyword) {
+                                            @RequestParam(defaultValue = "10") Integer size,
+                                            @RequestParam(required = false) String keyword) {
         checkAdmin();
         return Result.success(productService.getAdminProductPage(page, size, keyword));
     }

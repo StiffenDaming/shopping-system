@@ -40,7 +40,7 @@ public class AuthController {
 
     @PutMapping("/password")
     public Result<Void> updatePassword(@RequestParam String oldPassword,
-                                        @RequestParam String newPassword) {
+                                       @RequestParam String newPassword) {
         userService.updatePassword(UserContext.getCurrentId(), oldPassword, newPassword);
         return Result.success("密码修改成功", null);
     }

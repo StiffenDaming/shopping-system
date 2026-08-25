@@ -30,8 +30,8 @@ public class OrderController {
 
     @GetMapping
     public Result<IPage<Order>> myList(@RequestParam(defaultValue = "1") Integer page,
-                                        @RequestParam(defaultValue = "10") Integer size,
-                                        @RequestParam(required = false) String status) {
+                                       @RequestParam(defaultValue = "10") Integer size,
+                                       @RequestParam(required = false) String status) {
         return Result.success(orderService.getUserOrders(UserContext.getCurrentId(), page, size, status));
     }
 
@@ -76,9 +76,9 @@ public class OrderController {
 
     @GetMapping("/admin")
     public Result<IPage<Order>> adminList(@RequestParam(defaultValue = "1") Integer page,
-                                           @RequestParam(defaultValue = "10") Integer size,
-                                           @RequestParam(required = false) String status,
-                                           @RequestParam(required = false) String keyword) {
+                                          @RequestParam(defaultValue = "10") Integer size,
+                                          @RequestParam(required = false) String status,
+                                          @RequestParam(required = false) String keyword) {
         checkAdmin();
         return Result.success(orderService.getAdminOrders(page, size, status, keyword));
     }

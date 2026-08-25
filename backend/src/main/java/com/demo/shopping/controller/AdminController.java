@@ -33,8 +33,8 @@ public class AdminController {
 
     @GetMapping("/users")
     public Result<IPage<User>> userList(@RequestParam(defaultValue = "1") Integer page,
-                                          @RequestParam(defaultValue = "10") Integer size,
-                                          @RequestParam(required = false) String keyword) {
+                                        @RequestParam(defaultValue = "10") Integer size,
+                                        @RequestParam(required = false) String keyword) {
         checkAdmin();
         return Result.success(userService.getUserPage(page, size, keyword));
     }
