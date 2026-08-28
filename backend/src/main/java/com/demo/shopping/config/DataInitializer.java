@@ -81,20 +81,22 @@ public class DataInitializer implements CommandLineRunner {
         }
         Object[][] data = {
                 // name, description, price, imageUrl, categoryId, stock
-                {"Sauce Labs Backpack", "carry.allTheThings() with the sleek, streamlined Sly Pack that melds uncompromising style with unequaled utility.", 29.99, "https://www.saucedemo.com/static/media/sauce-backpack-1200x1500.0a0b85a3.jpg", 2, 10},
-                {"Sauce Labs Bike Light", "A red light isn't the desired state in testing but it sure helps when riding your bike at night.", 9.99, "https://www.saucedemo.com/static/media/bike-light-1200x1500.37c843b2.jpg", 2, 15},
-                {"Sauce Labs Bolt T-Shirt", "Get your testing superhero on with the Sauce Labs bolt T-shirt.", 15.99, "https://www.saucedemo.com/static/media/bolt-shirt-1200x1500.c2599e47.jpg", 1, 20},
-                {"Sauce Labs Fleece Jacket", "It's not every day that you come across a midweight quarter-zip fleece jacket.", 49.99, "https://www.saucedemo.com/static/media/sauce-pullover-1200x1500.51d275cb.jpg", 1, 8},
-                {"Sauce Labs Onesie", "Ribbed snap-button bottoms and matching tank top.", 7.99, "https://www.saucedemo.com/static/media/red-onesie-1200x1500.1a4b4d48.jpg", 1, 12},
-                {"Test.allTheThings() T-Shirt", "This classic Sauce Labs t-shirt is perfect to wear when cooking.", 15.99, "https://www.saucedemo.com/static/media/red-tatt-1200x1500.25bec0c9.jpg", 1, 6},
-                {"Java编程思想", "Thinking in Java 第四版，经典编程入门书籍。", 89.00, "https://images.unsplash.com/photo-1532012197267-da84d127e765?w=400", 3, 30},
-                {"SpringBoot实战", "Spring Boot 实战派，深入浅出讲解微服务开发。", 69.00, "https://images.unsplash.com/photo-1544947950-fa07a3d50356?w=400", 3, 25},
-                {"蓝牙耳机", "高保真无线蓝牙耳机，降噪主动隔离。", 199.00, "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400", 2, 18},
-                {"机械键盘", "客制化机械键盘，青轴手感，RGB背光。", 299.00, "https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=400", 2, 10},
-                {"跑步鞋", "轻量透气运动跑鞋，减震回弹。", 399.00, "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400", 5, 14},
-                {"瑜伽垫", "加厚防滑瑜伽垫，环保TPE材质。", 129.00, "https://images.unsplash.com/photo-1601925260368-ae2f43cf8b32?w=400", 5, 20},
-                {"有机蓝莓", "新鲜有机蓝莓250g装，富含花青素。", 39.90, "https://images.unsplash.com/photo-1498557850926-782724f8816b?w=400", 4, 50},
-                {"手冲咖啡豆", "埃塞俄比亚耶加雪菲，250g中度烘焙。", 88.00, "https://images.unsplash.com/photo-1559056199-641a0ac8b55e?w=400", 4, 35},
+                {"纯棉宽松T恤", "四季百搭纯棉T恤，舒适透气，多色可选，简约休闲风格", 59.90, "https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=400", 1, 50},
+                {"弹力直筒牛仔裤", "经典版型弹力牛仔裤，水洗做旧工艺，修身不紧绷", 199.00, "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?w=400", 1, 30},
+                {"连帽加绒卫衣", "秋冬加绒连帽卫衣，宽松休闲百搭，潮流街头风", 129.00, "https://images.unsplash.com/photo-1556905055-8f358a7a47b2?w=400", 1, 40},
+                {"无线降噪蓝牙耳机", "主动降噪技术，超长续航40小时，HiFi音质，佩戴舒适", 399.00, "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400", 2, 20},
+                {"RGB机械键盘", "全键无冲RGB背光机械键盘，青轴/红轴可选，游戏办公皆宜", 299.00, "https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=400", 2, 15},
+                {"智能运动手表", "心率血氧双监测，GPS定位，50米防水，多运动模式", 899.00, "https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?w=400", 2, 10},
+                {"20000mAh移动电源", "双向快充大容量移动电源，支持PD3.0/QC3.0协议，可上飞机", 159.00, "https://images.unsplash.com/photo-1609592426645-2e20f2a4c75b?w=400", 2, 25},
+                {"Java编程思想（第4版）", "Bruce Eckel 经典著作，涵盖Java核心知识体系，编程入门必读", 89.00, "https://images.unsplash.com/photo-1532012197267-da84d127e765?w=400", 3, 30},
+                {"Spring Boot 3实战", "Spring Boot 3框架深入讲解，微服务开发实战指南", 79.00, "https://images.unsplash.com/photo-1544947950-fa07a3d50356?w=400", 3, 25},
+                {"深入理解Java虚拟机", "JVM高级特性与最佳实践，深入剖析垃圾回收与内存模型", 109.00, "https://images.unsplash.com/photo-1531078085628-9f71343f9b33?w=400", 3, 20},
+                {"纯牛奶250ml×16盒", "优质牧场纯牛奶，蛋白质含量3.2g/100ml，营养早餐好搭档", 49.90, "https://images.unsplash.com/photo-1563636619-e9143da7973b?w=400", 4, 60},
+                {"每日坚果礼盒", "混合坚果果干礼盒，含腰果、巴旦木、核桃、蔓越莓等", 89.00, "https://images.unsplash.com/photo-1599599810769-bcde5a160d32?w=400", 4, 40},
+                {"天然椴树蜜500g", "纯天然东北椴树蜜，结晶细腻，清香甘甜，润肺养颜", 68.00, "https://images.unsplash.com/photo-1587133568772-836045cb09a8?w=400", 4, 35},
+                {"轻量缓震跑步鞋", "专业跑鞋减震回弹，轻量化设计，透气网面，适合长跑", 459.00, "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400", 5, 15},
+                {"TPE防滑瑜伽垫", "环保TPE材质加厚防滑瑜伽垫，高回弹，无异味", 129.00, "https://images.unsplash.com/photo-1601925260368-ae2f43cf8b32?w=400", 5, 20},
+                {"全碳素羽毛球拍", "超轻碳素材质羽毛球拍，平衡点适中，攻守兼备", 329.00, "https://images.unsplash.com/photo-1511882150382-421056c89033?w=400", 5, 12},
         };
 
         for (Object[] row : data) {
