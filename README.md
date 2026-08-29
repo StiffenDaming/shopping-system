@@ -1,10 +1,10 @@
-# 购物商城系统（Graduation Project）
+# 零号藏馆系统（Graduation Project）
 
-基于 SpringBoot + Vue3 的购物商城系统，仿 saucedemo.com，支持用户端和管理端双角色，含完整 CRUD 操作。
+基于 SpringBoot + Vue3 的零号藏馆系统，仿 saucedemo.com，支持用户端和管理端双角色，含完整 CRUD 操作。
 
 ## 项目概述
 
-- **项目名称**: 购物商城系统
+- **项目名称**: 零号藏馆系统
 - **技术栈**: Java 11 + SpringBoot 2.7 + MyBatis-Plus + JWT + Vue3 + Vite + Element Plus
 - **数据库**: MySQL 8.0（Docker 部署 / 本地安装均可）
 - **角色**: 管理员（ADMIN）+ 普通用户（USER）

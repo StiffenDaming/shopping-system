@@ -1,6 +1,6 @@
 #!/bin/bash
 # ============================================
-# 购物商城系统 - 一键启动脚本
+# 零号藏馆系统 - 一键启动脚本
 # 用法: ./start.sh [backend|frontend|all]
 # ============================================
 
@@ -65,7 +65,7 @@ case "${1:-all}" in
         start_frontend
         ;;
     all)
-        echo ">>> 启动购物商城系统..."
+        echo ">>> 启动零号藏馆系统..."
         generate_settings
         start_backend &
         sleep 8

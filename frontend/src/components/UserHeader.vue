@@ -2,7 +2,7 @@
   <div class="user-header">
     <div class="header-inner">
       <div class="header-left">
-        <router-link to="/products" class="logo">购物商城</router-link>
+        <router-link to="/products" class="logo">零号藏馆</router-link>
       </div>
       <div class="header-nav">
         <router-link to="/products" class="nav-link">商品列表</router-link>

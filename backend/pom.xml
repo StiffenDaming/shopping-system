@@ -15,7 +15,7 @@
     <artifactId>shopping</artifactId>
     <version>1.0.0</version>
     <name>shopping</name>
-    <description>校园购物商城系统 - 基于 SpringBoot</description>
+    <description>零号藏馆系统 - 基于 SpringBoot</description>
 
     <properties>
         <java.version>11</java.version>

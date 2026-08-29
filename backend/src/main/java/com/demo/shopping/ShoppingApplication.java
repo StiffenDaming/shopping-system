@@ -6,7 +6,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.core.env.Environment;
 
 /**
- * 购物商城系统启动类
+ * 零号藏馆系统启动类
  */
 @SpringBootApplication
 @MapperScan("com.demo.shopping.mapper")
@@ -19,7 +19,7 @@ public class ShoppingApplication {
 
         StringBuilder sb = new StringBuilder();
         sb.append("\n========================================\n");
-        sb.append("  购物商城系统 - 后端启动成功!\n");
+        sb.append("  零号藏馆系统 - 后端启动成功!\n");
         sb.append("  API 端口: ").append(port).append("\n");
         sb.append("  当前环境: ").append(profile).append("\n");
         sb.append("  前端访问: http://localhost:5173 (需启动前端)\n");

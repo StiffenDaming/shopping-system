@@ -65,14 +65,22 @@ public class DataInitializer implements CommandLineRunner {
         if (categoryMapper.selectCount(null) > 0) {
             return;
         }
-        String[] names = {"服装", "电子产品", "图书", "食品", "运动户外"};
+        String[] names = {
+                "文玩雅器",          // 1
+                "古玩雕像",          // 2
+                "书刊影集",          // 3
+                "钱币票证",          // 4
+                "潮玩盲盒",          // 5
+                "动漫游戏周边",      // 6
+                "镇馆之宝"           // 7
+        };
         for (int i = 0; i < names.length; i++) {
             Category c = new Category();
             c.setName(names[i]);
             c.setSort(i);
             categoryMapper.insert(c);
         }
-        log.info("初始化商品分类: {}", String.join(", ", names));
+        log.info("初始化收藏品分类: {}", String.join(", ", names));
     }
 
     private void initProducts() {
@@ -80,23 +88,38 @@ public class DataInitializer implements CommandLineRunner {
             return;
         }
         Object[][] data = {
-                // name, description, price, imageUrl, categoryId, stock
-                {"纯棉宽松T恤", "四季百搭纯棉T恤，舒适透气，多色可选，简约休闲风格", 59.90, "https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=400", 1, 50},
-                {"弹力直筒牛仔裤", "经典版型弹力牛仔裤，水洗做旧工艺，修身不紧绷", 199.00, "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?w=400", 1, 30},
-                {"连帽加绒卫衣", "秋冬加绒连帽卫衣，宽松休闲百搭，潮流街头风", 129.00, "https://images.unsplash.com/photo-1556905055-8f358a7a47b2?w=400", 1, 40},
-                {"无线降噪蓝牙耳机", "主动降噪技术，超长续航40小时，HiFi音质，佩戴舒适", 399.00, "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400", 2, 20},
-                {"RGB机械键盘", "全键无冲RGB背光机械键盘，青轴/红轴可选，游戏办公皆宜", 299.00, "https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=400", 2, 15},
-                {"智能运动手表", "心率血氧双监测，GPS定位，50米防水，多运动模式", 899.00, "https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?w=400", 2, 10},
-                {"20000mAh移动电源", "双向快充大容量移动电源，支持PD3.0/QC3.0协议，可上飞机", 159.00, "https://images.unsplash.com/photo-1609592426645-2e20f2a4c75b?w=400", 2, 25},
-                {"Java编程思想（第4版）", "Bruce Eckel 经典著作，涵盖Java核心知识体系，编程入门必读", 89.00, "https://images.unsplash.com/photo-1532012197267-da84d127e765?w=400", 3, 30},
-                {"Spring Boot 3实战", "Spring Boot 3框架深入讲解，微服务开发实战指南", 79.00, "https://images.unsplash.com/photo-1544947950-fa07a3d50356?w=400", 3, 25},
-                {"深入理解Java虚拟机", "JVM高级特性与最佳实践，深入剖析垃圾回收与内存模型", 109.00, "https://images.unsplash.com/photo-1531078085628-9f71343f9b33?w=400", 3, 20},
-                {"纯牛奶250ml×16盒", "优质牧场纯牛奶，蛋白质含量3.2g/100ml，营养早餐好搭档", 49.90, "https://images.unsplash.com/photo-1563636619-e9143da7973b?w=400", 4, 60},
-                {"每日坚果礼盒", "混合坚果果干礼盒，含腰果、巴旦木、核桃、蔓越莓等", 89.00, "https://images.unsplash.com/photo-1599599810769-bcde5a160d32?w=400", 4, 40},
-                {"天然椴树蜜500g", "纯天然东北椴树蜜，结晶细腻，清香甘甜，润肺养颜", 68.00, "https://images.unsplash.com/photo-1587133568772-836045cb09a8?w=400", 4, 35},
-                {"轻量缓震跑步鞋", "专业跑鞋减震回弹，轻量化设计，透气网面，适合长跑", 459.00, "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400", 5, 15},
-                {"TPE防滑瑜伽垫", "环保TPE材质加厚防滑瑜伽垫，高回弹，无异味", 129.00, "https://images.unsplash.com/photo-1601925260368-ae2f43cf8b32?w=400", 5, 20},
-                {"全碳素羽毛球拍", "超轻碳素材质羽毛球拍，平衡点适中，攻守兼备", 329.00, "https://images.unsplash.com/photo-1511882150382-421056c89033?w=400", 5, 12},
+                // ===== 文玩雅器 (categoryId=1) =====
+                {"100种天然水晶矿石", "包含紫水晶、黄水晶、萤石等，标本级，带展示盒", 20.40, "https://shopping-system.oss-cn-guangzhou.aliyuncs.com/%E6%96%87%E7%8E%A9%E9%9B%85%E5%99%A8/crystals.jpg", 1, 18},
+                {"亚马逊风铃", "南美风格手工风铃，天然羽毛＋铜管，清越悦耳", 39.00, "https://shopping-system.oss-cn-guangzhou.aliyuncs.com/%E6%96%87%E7%8E%A9%E9%9B%85%E5%99%A8/windchime.jpg", 1, 10},
+                {"李太白真迹", "古代书法作品（高仿），卷轴装裱，可作装饰", 299.00, "https://shopping-system.oss-cn-guangzhou.aliyuncs.com/%E6%96%87%E7%8E%A9%E9%9B%85%E5%99%A8/libai.jpg", 1, 2},
+                {"国风墨韵中式圆盘", "陶瓷圆形摆件，水墨风格，桌面装饰品", 49.00, "https://shopping-system.oss-cn-guangzhou.aliyuncs.com/%E6%96%87%E7%8E%A9%E9%9B%85%E5%99%A8/plate.jpg", 1, 15},
+                {"天然贝壳标本", "南海稀有贝壳，完整无损，带支架底座", 39.00, "https://shopping-system.oss-cn-guangzhou.aliyuncs.com/%E6%96%87%E7%8E%A9%E9%9B%85%E5%99%A8/shell.jpg", 1, 7},
+
+                // ===== 古玩雕像 (categoryId=2) =====
+                {"【清仓价】正品碧海灵龙", "清仓价，原价1299元，现仅售899元，限量雕像", 899.00, "https://shopping-system.oss-cn-guangzhou.aliyuncs.com/%E5%8F%A4%E7%8E%A9%E9%9B%95%E5%83%8F/bihai.jpg", 2, 8},
+                {"思考者【砂岩款】", "经典罗丹《思想者》复刻雕塑，砂岩材质，质感厚重，书房/客厅艺术摆件", 329.00, "https://shopping-system.oss-cn-guangzhou.aliyuncs.com/%E5%8F%A4%E7%8E%A9%E9%9B%95%E5%83%8F/thinker.jpg", 2, 3},
+                {"实心纯铜李小龙铜像", "实心纯铜，高约30cm，经典截拳道姿势，收藏佳品", 499.00, "https://shopping-system.oss-cn-guangzhou.aliyuncs.com/%E5%8F%A4%E7%8E%A9%E9%9B%95%E5%83%8F/brucelee.jpg", 2, 2},
+
+                // ===== 书刊影集 (categoryId=3) =====
+                {"绝版书籍【限定出售】《我的奋斗》", "特殊历史时期版本，稀见文献，仅此五本", 299.00, "https://shopping-system.oss-cn-guangzhou.aliyuncs.com/%E4%B9%A6%E5%88%8A%E5%BD%B1%E9%9B%86/meinkampf.jpg", 3, 5},
+                {"巴黎奥运40金相册集", "2024巴黎奥运会中国代表团40枚金牌全纪录，高清纪实影像，含开幕式及闭幕式精彩瞬间", 199.00, "https://shopping-system.oss-cn-guangzhou.aliyuncs.com/%E4%B9%A6%E5%88%8A%E5%BD%B1%E9%9B%86/paris-olympic-40.jpg", 3, 1},
+                {"《山海经全彩》", "全彩插图版，收录珍稀古本图像，硬壳精装", 159.00, "https://shopping-system.oss-cn-guangzhou.aliyuncs.com/%E4%B9%A6%E5%88%8A%E5%BD%B1%E9%9B%86/shanhaijing.jpg", 3, 12},
+
+                // ===== 钱币票证 (categoryId=4) =====
+                {"火影忍者纪念钞", "非流通纪念钞，火影忍者官方授权，含收藏卡", 9.88, "https://shopping-system.oss-cn-guangzhou.aliyuncs.com/%E9%92%B1%E5%B8%81%E7%A5%A8%E8%AF%81/naruto-bill.jpg", 4, 30},
+                {"十二生肖邮票", "十二生肖大全套，含收藏册，品相完好", 199.00, "https://shopping-system.oss-cn-guangzhou.aliyuncs.com/%E9%92%B1%E5%B8%81%E7%A5%A8%E8%AF%81/stamp-12.jpg", 4, 6},
+                {"民国纸币", "民国时期真品纸币，品相七成新，带展示卡", 89.00, "https://shopping-system.oss-cn-guangzhou.aliyuncs.com/%E9%92%B1%E5%B8%81%E7%A5%A8%E8%AF%81/republic-bill.jpg", 4, 4},
+
+                // ===== 潮玩盲盒 (categoryId=5) =====
+                {"奶龙-神明降临", "油画风格质感，神明降临系列，含隐藏款", 89.00, "https://shopping-system.oss-cn-guangzhou.aliyuncs.com/%E6%BD%AE%E7%8E%A9%E7%9B%B2%E7%9B%92/nailong.jpg", 5, 24},
+                {"入酒虫盲盒玩偶", "王者荣耀系列联名盲盒，随机款，含隐藏", 59.00, "https://shopping-system.oss-cn-guangzhou.aliyuncs.com/%E6%BD%AE%E7%8E%A9%E7%9B%B2%E7%9B%92/rujiu.jpg", 5, 36},
+
+                // ===== 动漫游戏周边 (categoryId=6) =====
+                {"哥伦比娅水晶球", "高透水晶球，内含微缩场景，直径约10cm", 19.89, "https://shopping-system.oss-cn-guangzhou.aliyuncs.com/%E5%8A%A8%E6%BC%AB%E6%B8%B8%E6%88%8F%E5%91%A8%E8%BE%B9/crystalball.jpg", 6, 15},
+                {"亚力克相框 【鸣潮卡提希娅】", "角色限定亚克力相框，双面印刷，含支架", 49.00, "https://shopping-system.oss-cn-guangzhou.aliyuncs.com/%E5%8A%A8%E6%BC%AB%E6%B8%B8%E6%88%8F%E5%91%A8%E8%BE%B9/frame.jpg", 6, 20},
+
+                // ===== 镇馆之宝 (categoryId=7) =====
+                {"传国玉玺", "高仿古玉玺，仿制秦代传国玉玺，雕刻精细，含锦盒", 9999.00, "https://shopping-system.oss-cn-guangzhou.aliyuncs.com/%E9%95%87%E9%A6%86%E4%B9%8B%E5%AE%9D/seal.jpg", 7, 1},
         };
 
         for (Object[] row : data) {
@@ -110,6 +133,6 @@ public class DataInitializer implements CommandLineRunner {
             p.setStatus(1);
             productMapper.insert(p);
         }
-        log.info("初始化商品数据: {} 件", data.length);
+        log.info("初始化收藏品数据: {} 件", data.length);
     }
 }

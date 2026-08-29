@@ -4,7 +4,7 @@
       <div class="login-icon">
         <img src="https://www.saucedemo.com/static/media/login-robot.9c14f6b3.png" alt="logo" onerror="this.style.display='none'" />
       </div>
-      <h2 class="login-title">购物商城系统</h2>
+      <h2 class="login-title">零号藏馆系统</h2>
       <el-form ref="formRef" :model="form" :rules="rules" @submit.prevent="handleLogin">
         <el-form-item prop="username">
           <el-input v-model="form.username" placeholder="用户名" size="large" prefix-icon="User" />
