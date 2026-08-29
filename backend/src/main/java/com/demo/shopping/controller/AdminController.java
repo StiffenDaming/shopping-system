@@ -46,6 +46,13 @@ public class AdminController {
         return Result.success("状态已更新", null);
     }
 
+    @PutMapping("/users/{id}/reset-password")
+    public Result<Void> resetPassword(@PathVariable Long id) {
+        checkAdmin();
+        userService.resetPassword(id);
+        return Result.success("密码已重置为123456", null);
+    }
+
     private void checkAdmin() {
         if (!UserContext.isAdmin()) {
             throw new BusinessException(403, "无权限，仅管理员可操作");

@@ -132,6 +132,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if (status != 0 && status != 1) {
             throw new BusinessException("状态参数非法");
         }
+        User user = baseMapper.selectById(userId);
+        if (user == null) {
+            throw new BusinessException("用户不存在");
+        }
+        if ("ADMIN".equals(user.getRole())) {
+            throw new BusinessException("不允许禁用/启用管理员账号");
+        }
         User update = new User();
         update.setId(userId);
         update.setStatus(status);
@@ -140,6 +147,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public void resetPassword(Long userId) {
+        User user = baseMapper.selectById(userId);
+        if (user == null) {
+            throw new BusinessException("用户不存在");
+        }
+        if ("ADMIN".equals(user.getRole())) {
+            throw new BusinessException("不允许重置管理员密码");
+        }
         User update = new User();
         update.setId(userId);
         update.setPassword(passwordEncoder.encode("123456"));

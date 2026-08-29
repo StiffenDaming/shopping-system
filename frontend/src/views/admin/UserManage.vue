@@ -20,9 +20,12 @@
         </template>
       </el-table-column>
       <el-table-column label="注册时间" prop="createTime" width="180" />
-      <el-table-column label="操作" width="120">
+      <el-table-column label="操作" width="200">
         <template #default="{ row }">
-          <el-button size="small" :type="row.status === 1 ? 'warning' : 'success'" @click="toggleStatus(row)">{{ row.status === 1 ? '禁用' : '启用' }}</el-button>
+          <template v-if="row.role !== 'ADMIN'">
+            <el-button size="small" :type="row.status === 1 ? 'warning' : 'success'" @click="toggleStatus(row)">{{ row.status === 1 ? '禁用' : '启用' }}</el-button>
+            <el-button size="small" type="danger" @click="resetPwd(row)">重置密码</el-button>
+          </template>
         </template>
       </el-table-column>
     </el-table>
@@ -59,6 +62,12 @@ async function toggleStatus(row) {
   await request.put(`/admin/users/${row.id}/status`, null, { params: { status: newStatus } })
   ElMessage.success('状态已更新')
   loadUsers()
+}
+
+async function resetPwd(row) {
+  await ElMessageBox.confirm(`确定将「${row.username}」的密码重置为123456？`, '提示', { type: 'warning' })
+  await request.put(`/admin/users/${row.id}/reset-password`)
+  ElMessage.success('密码已重置为123456')
 }
 
 onMounted(loadUsers)
