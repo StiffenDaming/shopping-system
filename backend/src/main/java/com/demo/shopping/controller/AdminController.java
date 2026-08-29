@@ -39,25 +39,11 @@ public class AdminController {
         return Result.success(userService.getUserPage(page, size, keyword));
     }
 
-    @PutMapping("/users/{id}/role")
-    public Result<Void> updateUserRole(@PathVariable Long id, @RequestParam String role) {
-        checkAdmin();
-        userService.updateUserRole(id, role);
-        return Result.success("角色已更新", null);
-    }
-
     @PutMapping("/users/{id}/status")
     public Result<Void> updateUserStatus(@PathVariable Long id, @RequestParam Integer status) {
         checkAdmin();
         userService.updateUserStatus(id, status);
         return Result.success("状态已更新", null);
-    }
-
-    @PutMapping("/users/{id}/reset-password")
-    public Result<Void> resetPassword(@PathVariable Long id) {
-        checkAdmin();
-        userService.resetPassword(id);
-        return Result.success("密码已重置为123456", null);
     }
 
     private void checkAdmin() {

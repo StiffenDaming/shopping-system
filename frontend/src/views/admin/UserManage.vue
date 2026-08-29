@@ -20,11 +20,9 @@
         </template>
       </el-table-column>
       <el-table-column label="注册时间" prop="createTime" width="180" />
-      <el-table-column label="操作" width="280">
+      <el-table-column label="操作" width="120">
         <template #default="{ row }">
-          <el-button size="small" @click="toggleRole(row)">{{ row.role === 'ADMIN' ? '设为用户' : '设为管理员' }}</el-button>
           <el-button size="small" :type="row.status === 1 ? 'warning' : 'success'" @click="toggleStatus(row)">{{ row.status === 1 ? '禁用' : '启用' }}</el-button>
-          <el-button size="small" type="danger" @click="resetPwd(row)">重置密码</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -56,25 +54,11 @@ async function loadUsers() {
   }
 }
 
-async function toggleRole(row) {
-  const newRole = row.role === 'ADMIN' ? 'USER' : 'ADMIN'
-  await ElMessageBox.confirm(`确定将「${row.username}」设为${newRole === 'ADMIN' ? '管理员' : '普通用户'}？`, '提示')
-  await request.put(`/admin/users/${row.id}/role`, null, { params: { role: newRole } })
-  ElMessage.success('角色已更新')
-  loadUsers()
-}
-
 async function toggleStatus(row) {
   const newStatus = row.status === 1 ? 0 : 1
   await request.put(`/admin/users/${row.id}/status`, null, { params: { status: newStatus } })
   ElMessage.success('状态已更新')
   loadUsers()
-}
-
-async function resetPwd(row) {
-  await ElMessageBox.confirm(`确定将「${row.username}」的密码重置为123456？`, '提示', { type: 'warning' })
-  await request.put(`/admin/users/${row.id}/reset-password`)
-  ElMessage.success('密码已重置为123456')
 }
 
 onMounted(loadUsers)

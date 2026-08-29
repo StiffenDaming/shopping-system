@@ -160,6 +160,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         }
 
         order.setStatus("CANCELLED");
+        order.setUpdateTime(LocalDateTime.now());
         baseMapper.updateById(order);
     }
 
@@ -223,6 +224,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
             throw new BusinessException("只能对待发货订单进行发货操作");
         }
         order.setStatus("SHIPPED");
+        order.setUpdateTime(LocalDateTime.now());
         baseMapper.updateById(order);
     }
 
@@ -236,6 +238,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
             throw new BusinessException("只能对已发货订单进行强制完成操作");
         }
         order.setStatus("COMPLETED");
+        order.setUpdateTime(LocalDateTime.now());
         baseMapper.updateById(order);
     }
 
