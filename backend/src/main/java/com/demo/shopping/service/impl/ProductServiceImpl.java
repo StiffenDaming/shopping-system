@@ -91,7 +91,7 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
     }
 
     private void applySort(LambdaQueryWrapper<Product> wrapper, String sort) {
-        if (sort == null) {
+        if (sort == null || sort.isEmpty()) {
             wrapper.orderByDesc(Product::getCreateTime);
             return;
         }
@@ -102,11 +102,8 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
             case "price-desc":
                 wrapper.orderByDesc(Product::getPrice);
                 break;
-            case "name-asc":
-                wrapper.orderByAsc(Product::getName);
-                break;
-            case "name-desc":
-                wrapper.orderByDesc(Product::getName);
+            case "random":
+                wrapper.last("ORDER BY RAND()");
                 break;
             default:
                 wrapper.orderByDesc(Product::getCreateTime);

@@ -9,12 +9,10 @@
             <el-option v-for="c in categories" :key="c.id" :label="c.name" :value="c.id" />
           </el-select>
           <el-select v-model="query.sort" placeholder="排序" style="width:160px" @change="loadProducts">
-            <el-option label="默认排序" value="" />
+            <el-option label="默认排序（最新上架）" value="" />
             <el-option label="价格从低到高" value="price-asc" />
             <el-option label="价格从高到低" value="price-desc" />
-            <el-option label="名称 A-Z" value="name-asc" />
-            <el-option label="名称 Z-A" value="name-desc" />
-            <el-option label="最新上架" value="newest" />
+            <el-option label="随机排序" value="random" />
           </el-select>
         </div>
         <div class="filter-right">
