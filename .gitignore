@@ -1,6 +1,12 @@
 # ========== Java / Maven ==========
 # Maven 构建输出
 **/target/
+
+# Allure CLI 工具目录（由 allure-maven-plugin 自动下载，不是源码）
+**/.allure/
+# Allure 测试结果（每次运行生成）
+**/allure-results/
+**/allure-report/
 **/pom.xml.tag
 **/pom.xml.releaseBackup
 **/pom.xml.versionsBackup
