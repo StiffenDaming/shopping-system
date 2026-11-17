@@ -52,22 +52,22 @@
     <!-- 测试概述 -->
     <div class="summary-card">
         <h2 style="margin-top:0;border:none;">测试概述</h2>
-        <p>本文档记录了收藏品商城系统的单元测试和功能测试用例，覆盖订单管理、购物车、收货地址、个性化推荐四大核心模块，共计 60 个测试用例。</p>
+        <p>本文档记录了收藏品商城系统的单元测试和功能测试用例，覆盖订单管理、购物车、收货地址、端到端流程、个性化推荐、新增功能六大模块，共计 93 个测试用例。</p>
         <div class="summary-grid">
             <div class="stat-box">
-                <div class="num">60</div>
+                <div class="num">93</div>
                 <div class="label">测试用例总数</div>
             </div>
             <div class="stat-box">
-                <div class="num">50</div>
+                <div class="num">66</div>
                 <div class="label">单元测试</div>
             </div>
             <div class="stat-box">
-                <div class="num">10</div>
+                <div class="num">27</div>
                 <div class="label">功能测试</div>
             </div>
             <div class="stat-box">
-                <div class="num">4</div>
+                <div class="num">6</div>
                 <div class="label">测试模块</div>
             </div>
         </div>
@@ -958,10 +958,281 @@
         </table>
     </div>
 
+    <!-- 模块六：新增功能 -->
+    <div class="module-section">
+        <h2>模块六：新增功能测试</h2>
+        <div class="info-box">
+            <strong>被测类：</strong> <code>CaptchaService.java</code>、<code>UserServiceImpl.java</code>、<code>BannerService.java</code><br>
+            <strong>测试类：</strong> <code>CaptchaServiceTest.java</code>；个人中心、轮播图、手机号校验为接口/界面功能测试<br>
+            <strong>测试策略：</strong> 验证码为纯逻辑单元测试（点阵生成、一次性消费、过期）；其余为接口与界面功能测试
+        </div>
+
+        <h3>6.1 图形验证码（注册页）</h3>
+        <table>
+            <tr>
+                <th style="width:70px">编号</th>
+                <th style="width:160px">测试用例</th>
+                <th>前置条件</th>
+                <th>测试步骤</th>
+                <th>预期结果</th>
+                <th style="width:70px">优先级</th>
+                <th style="width:70px">类型</th>
+            </tr>
+            <tr>
+                <td>TC-CAP-001</td>
+                <td>生成验证码返回合法 PNG</td>
+                <td>无</td>
+                <td>调用 create()</td>
+                <td>返回 32 位 captchaId 与 data:image/png;base64 图片，解码后为合法 PNG</td>
+                <td><span class="tag tag-high">高</span></td>
+                <td><span class="tag tag-unit">单元</span></td>
+            </tr>
+            <tr>
+                <td>TC-CAP-002</td>
+                <td>输入正确验证码通过</td>
+                <td>已获取验证码</td>
+                <td>verify(id, 正确code)</td>
+                <td>返回 true</td>
+                <td><span class="tag tag-high">高</span></td>
+                <td><span class="tag tag-unit">单元</span></td>
+            </tr>
+            <tr>
+                <td>TC-CAP-003</td>
+                <td>输入错误验证码失败</td>
+                <td>已获取验证码</td>
+                <td>verify(id, 错误code)</td>
+                <td>返回 false</td>
+                <td><span class="tag tag-high">高</span></td>
+                <td><span class="tag tag-unit">单元</span></td>
+            </tr>
+            <tr>
+                <td>TC-CAP-004</td>
+                <td>一次性消费</td>
+                <td>同一 captchaId 已成功校验一次</td>
+                <td>再次 verify(同一id, 同一code)</td>
+                <td>返回 false，不能重复使用</td>
+                <td><span class="tag tag-high">高</span></td>
+                <td><span class="tag tag-unit">单元</span></td>
+            </tr>
+            <tr>
+                <td>TC-CAP-005</td>
+                <td>超过 5 分钟失效</td>
+                <td>验证码已过期</td>
+                <td>verify(id, 正确code)</td>
+                <td>返回 false</td>
+                <td><span class="tag tag-medium">中</span></td>
+                <td><span class="tag tag-unit">单元</span></td>
+            </tr>
+            <tr>
+                <td>TC-CAP-006</td>
+                <td>非法参数直接失败</td>
+                <td>id 或 code 为空 / id 不存在</td>
+                <td>verify(null/空/不存在的id)</td>
+                <td>返回 false，不抛异常</td>
+                <td><span class="tag tag-medium">中</span></td>
+                <td><span class="tag tag-unit">单元</span></td>
+            </tr>
+            <tr>
+                <td>TC-CAP-007</td>
+                <td>注册时验证码错误被拒</td>
+                <td>携带错误 captchaId/code</td>
+                <td>POST /api/auth/register</td>
+                <td>返回「验证码错误或已过期，请刷新后重试」</td>
+                <td><span class="tag tag-high">高</span></td>
+                <td><span class="tag tag-ui">功能</span></td>
+            </tr>
+            <tr>
+                <td>TC-CAP-008</td>
+                <td>注册时未带验证码被拒</td>
+                <td>请求体不含 captchaId/code</td>
+                <td>POST /api/auth/register</td>
+                <td>返回「验证码错误或已过期」</td>
+                <td><span class="tag tag-high">高</span></td>
+                <td><span class="tag tag-ui">功能</span></td>
+            </tr>
+        </table>
+
+        <h3>6.2 个人中心与修改密码</h3>
+        <table>
+            <tr>
+                <th style="width:70px">编号</th>
+                <th style="width:160px">测试用例</th>
+                <th>前置条件</th>
+                <th>测试步骤</th>
+                <th>预期结果</th>
+                <th style="width:70px">优先级</th>
+                <th style="width:70px">类型</th>
+            </tr>
+            <tr>
+                <td>TC-PWD-001</td>
+                <td>个人中心展示账号信息</td>
+                <td>已登录</td>
+                <td>进入 /profile</td>
+                <td>只读展示用户名、邮箱、角色、注册时间</td>
+                <td><span class="tag tag-medium">中</span></td>
+                <td><span class="tag tag-ui">功能</span></td>
+            </tr>
+            <tr>
+                <td>TC-PWD-002</td>
+                <td>原密码错误被拒</td>
+                <td>已登录</td>
+                <td>提交错误的原密码</td>
+                <td>提示「原密码错误」，密码不变</td>
+                <td><span class="tag tag-high">高</span></td>
+                <td><span class="tag tag-ui">功能</span></td>
+            </tr>
+            <tr>
+                <td>TC-PWD-003</td>
+                <td>修改密码成功并强制重登</td>
+                <td>已登录，原密码正确</td>
+                <td>提交新密码</td>
+                <td>提示修改成功；清除本地 token 并跳转登录页</td>
+                <td><span class="tag tag-high">高</span></td>
+                <td><span class="tag tag-ui">功能</span></td>
+            </tr>
+            <tr>
+                <td>TC-PWD-004</td>
+                <td>新旧密码交替验证</td>
+                <td>已把密码由 123456 改为 abc12345</td>
+                <td>分别用新旧密码登录</td>
+                <td>旧密码登录失败，新密码登录成功</td>
+                <td><span class="tag tag-high">高</span></td>
+                <td><span class="tag tag-ui">功能</span></td>
+            </tr>
+            <tr>
+                <td>TC-PWD-005</td>
+                <td>忘记密码：管理员重置后自助改密</td>
+                <td>用户忘记密码</td>
+                <td>管理员重置为 123456 → 用户登录 → 个人中心改密</td>
+                <td>重置后可登录，改密后新密码生效</td>
+                <td><span class="tag tag-high">高</span></td>
+                <td><span class="tag tag-ui">功能</span></td>
+            </tr>
+            <tr>
+                <td>TC-PWD-006</td>
+                <td>普通用户调用重置接口被拒</td>
+                <td>普通用户 Token</td>
+                <td>PUT /api/admin/users/{id}/reset-password</td>
+                <td>返回 403 无权限</td>
+                <td><span class="tag tag-medium">中</span></td>
+                <td><span class="tag tag-ui">功能</span></td>
+            </tr>
+        </table>
+
+        <h3>6.3 首页轮播图管理</h3>
+        <table>
+            <tr>
+                <th style="width:70px">编号</th>
+                <th style="width:160px">测试用例</th>
+                <th>前置条件</th>
+                <th>测试步骤</th>
+                <th>预期结果</th>
+                <th style="width:70px">优先级</th>
+                <th style="width:70px">类型</th>
+            </tr>
+            <tr>
+                <td>TC-BAN-001</td>
+                <td>前台展示已上架轮播图</td>
+                <td>库中有 4 张上架轮播图</td>
+                <td>GET /api/banners/list</td>
+                <td>返回 4 条，按 sort 升序；未登录也可访问</td>
+                <td><span class="tag tag-high">高</span></td>
+                <td><span class="tag tag-ui">功能</span></td>
+            </tr>
+            <tr>
+                <td>TC-BAN-002</td>
+                <td>新增轮播图</td>
+                <td>管理员登录</td>
+                <td>POST /api/admin/banners</td>
+                <td>新增成功，前台数量 +1</td>
+                <td><span class="tag tag-high">高</span></td>
+                <td><span class="tag tag-ui">功能</span></td>
+            </tr>
+            <tr>
+                <td>TC-BAN-003</td>
+                <td>下架后前台不再展示</td>
+                <td>存在上架轮播图</td>
+                <td>改为 status=0 后查前台列表</td>
+                <td>前台数量减少，该图不返回</td>
+                <td><span class="tag tag-high">高</span></td>
+                <td><span class="tag tag-ui">功能</span></td>
+            </tr>
+            <tr>
+                <td>TC-BAN-004</td>
+                <td>删除轮播图</td>
+                <td>存在可删除的轮播图</td>
+                <td>DELETE /api/admin/banners/{id}</td>
+                <td>删除成功，前台数量恢复</td>
+                <td><span class="tag tag-medium">中</span></td>
+                <td><span class="tag tag-ui">功能</span></td>
+            </tr>
+            <tr>
+                <td>TC-BAN-005</td>
+                <td>非管理员不可管理轮播图</td>
+                <td>普通用户 Token</td>
+                <td>访问 /api/admin/banners</td>
+                <td>返回 403</td>
+                <td><span class="tag tag-high">高</span></td>
+                <td><span class="tag tag-ui">功能</span></td>
+            </tr>
+            <tr>
+                <td>TC-BAN-006</td>
+                <td>筛选商品时自动收起</td>
+                <td>首页展开状态</td>
+                <td>点击任一分类</td>
+                <td>轮播与热藏榜自动收起，商品列表上移；可点「展开」恢复</td>
+                <td><span class="tag tag-medium">中</span></td>
+                <td><span class="tag tag-ui">功能</span></td>
+            </tr>
+        </table>
+
+        <h3>6.4 手机号格式校验</h3>
+        <table>
+            <tr>
+                <th style="width:70px">编号</th>
+                <th style="width:160px">测试用例</th>
+                <th>前置条件</th>
+                <th>测试步骤</th>
+                <th>预期结果</th>
+                <th style="width:70px">优先级</th>
+                <th style="width:70px">类型</th>
+            </tr>
+            <tr>
+                <td>TC-VAL-001</td>
+                <td>新增收货地址：手机号为空</td>
+                <td>已登录</td>
+                <td>POST /api/addresses，receiverPhone 为空</td>
+                <td>提示「联系电话不能为空」</td>
+                <td><span class="tag tag-high">高</span></td>
+                <td><span class="tag tag-ui">功能</span></td>
+            </tr>
+            <tr>
+                <td>TC-VAL-002</td>
+                <td>新增收货地址：手机号格式非法</td>
+                <td>已登录</td>
+                <td>receiverPhone 传 "abc" / "12345"</td>
+                <td>提示「手机号格式不正确」</td>
+                <td><span class="tag tag-high">高</span></td>
+                <td><span class="tag tag-ui">功能</span></td>
+            </tr>
+            <tr>
+                <td>TC-VAL-003</td>
+                <td>结算时手机号格式非法</td>
+                <td>购物车非空</td>
+                <td>POST /api/orders/checkout，手机号非法</td>
+                <td>提示「手机号格式不正确」</td>
+                <td><span class="tag tag-medium">中</span></td>
+                <td><span class="tag tag-ui">功能</span></td>
+            </tr>
+        </table>
+    </div>
+
     <!-- 运行测试 -->
     <div class="module-section">
         <h2>测试执行</h2>
         <div class="info-box">
+            <strong>说明：</strong>本文档收录 <strong>93</strong> 个代表性用例；其中单元与接口用例由 <code>mvn test</code> 自动执行，
+            实际执行 <strong>120</strong> 个测试方法（单元 83 + 接口 37），另有 25 个黑盒用例为手工执行。<br><br>
             <strong>运行命令：</strong><br>
             <code>cd backend</code><br>
             <code>mvn test -s ../maven-settings.xml</code><br><br>

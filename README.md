@@ -122,7 +122,8 @@ docker compose up -d
 ## 功能清单
 
 ### 用户端功能
-- [x] 用户注册 / 登录 / 退出
+- [x] 用户注册（含图形验证码）/ 登录 / 退出
+- [x] 个人中心（查看账号信息、修改密码，改密后需重新登录）
 - [x] 商品列表浏览（搜索、分类筛选、排序、分页）
 - [x] 商品详情查看
 - [x] 购物车管理（加入、修改数量、删除）
@@ -132,10 +133,10 @@ docker compose up -d
 
 ### 管理端功能
 - [x] 数据看板（用户/商品/订单统计、图表展示）
-- [x] 用户管理（列表、角色切换、禁用/启用、重置密码）
-- [x] 商品管理（新增、编辑、删除、上下架、图片、分类）
+- [x] 用户管理（列表、按用户名/邮箱搜索、禁用/启用、重置密码）
+- [x] 商品管理（新增、编辑、删除、上下架、图片 URL、分类）
 - [x] 订单管理（列表、详情、发货、强制完成、状态筛选）
-- [x] 分类管理（列表、增删改）
+- [x] 轮播图管理（新增、编辑、删除、排序、上下架）
 
 ### 推荐模块功能
 - [x] 用户行为埋点（浏览、加购、搜索，游客可匿名上报）
@@ -153,10 +154,10 @@ docker compose up -d
 | 方法 | 路径 | 说明 | 权限 |
 |------|------|------|------|
 | POST | /api/auth/login | 登录 | 公开 |
-| POST | /api/auth/register | 注册 | 公开 |
+| POST | /api/auth/register | 注册（需图形验证码） | 公开 |
+| GET | /api/auth/captcha | 获取图形验证码 | 公开 |
 | GET | /api/auth/info | 获取当前用户信息 | 登录 |
 | PUT | /api/auth/password | 修改密码 | 登录 |
-| PUT | /api/auth/profile | 更新个人资料 | 登录 |
 
 ### 商品接口
 | 方法 | 路径 | 说明 | 权限 |
@@ -172,10 +173,7 @@ docker compose up -d
 ### 分类接口
 | 方法 | 路径 | 说明 | 权限 |
 |------|------|------|------|
-| GET | /api/categories/list | 分类列表 | 公开 |
-| POST | /api/categories | 新增分类 | 管理员 |
-| PUT | /api/categories | 修改分类 | 管理员 |
-| DELETE | /api/categories/{id} | 删除分类 | 管理员 |
+| GET | /api/categories/list | 分类列表（分类在初始化时预置，不提供后台维护） | 公开 |
 
 ### 购物车接口
 | 方法 | 路径 | 说明 | 权限 |
@@ -220,10 +218,15 @@ docker compose up -d
 | PUT | /api/admin/users/{id}/status | 修改状态 | 管理员 |
 | PUT | /api/admin/users/{id}/reset-password | 重置密码 | 管理员 |
 
-### 文件上传
+### 轮播图接口
+
 | 方法 | 路径 | 说明 | 权限 |
 |------|------|------|------|
-| POST | /api/upload | 上传图片 | 登录 |
+| GET | /api/banners/list | 已上架轮播图 | 公开 |
+| GET | /api/admin/banners | 全部轮播图 | 管理员 |
+| POST | /api/admin/banners | 新增轮播图 | 管理员 |
+| PUT | /api/admin/banners | 修改轮播图 | 管理员 |
+| DELETE | /api/admin/banners/{id} | 删除轮播图 | 管理员 |
 
 ### 推荐相关接口
 
@@ -253,8 +256,6 @@ docker compose up -d
 | username | VARCHAR(50) | 用户名（唯一） |
 | password | VARCHAR(100) | 密码（BCrypt加密） |
 | email | VARCHAR(100) | 邮箱 |
-| phone | VARCHAR(20) | 手机号 |
-| avatar | VARCHAR(255) | 头像URL |
 | role | VARCHAR(20) | 角色: USER/ADMIN |
 | status | INT | 状态: 1-正常, 0-禁用 |
 | last_view_orders_time | DATETIME | 上次查看订单时间（红点提示用） |
@@ -383,6 +384,18 @@ docker compose up -d
 | hot_score | DECIMAL(12,4) | 热度分 |
 | view_cnt / cart_cnt / order_cnt | INT | 近7天行为计数 |
 | stat_date | DATE | 统计日期 |
+
+### banner（首页轮播图表）
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| id | BIGINT | 轮播图ID |
+| image_url | VARCHAR(500) | 图片地址（16:9） |
+| title | VARCHAR(50) | 标题（仅后台识别用） |
+| sort | INT | 排序值，越小越靠前 |
+| status | INT | 状态: 1-上架, 0-下架 |
+| create_time | DATETIME | 创建时间 |
+| update_time | DATETIME | 更新时间 |
 
 ## 技术架构说明
 
