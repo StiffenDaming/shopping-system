@@ -100,10 +100,11 @@ class OrderServiceImplTest {
             dto.setReceiverPhone("13800138000");
             dto.setReceiverAddress("北京市海淀区xxx路123号");
 
-            Allure.step("Mock 购物车查询、商品查询、订单插入");
+            Allure.step("Mock 购物车查询、商品查询、订单插入、库存扣减成功");
             when(cartItemMapper.selectCartWithProduct(USER_ID)).thenReturn(cartItems);
             when(productMapper.selectById(10L)).thenReturn(productA);
             when(productMapper.selectById(20L)).thenReturn(productB);
+            when(productMapper.deductStock(anyLong(), anyInt())).thenReturn(1);
             when(orderMapper.insert(any(Order.class))).thenAnswer(invocation -> {
                 Order order = invocation.getArgument(0);
                 order.setId(ORDER_ID);
@@ -120,8 +121,35 @@ class OrderServiceImplTest {
             Allure.step("验证：订单已插入1次，明细已插入2次，库存已扣减2次，购物车已清空");
             verify(orderMapper, times(1)).insert(any(Order.class));
             verify(orderItemMapper, times(2)).insert(any(OrderItem.class));
-            verify(productMapper, times(2)).updateById(any(Product.class));
+            verify(productMapper, times(2)).deductStock(anyLong(), anyInt());
             verify(cartItemMapper, times(1)).deleteBatchIds(anyList());
+        }
+
+        @Test
+        @Severity(SeverityLevel.CRITICAL)
+        @DisplayName("下单失败 - 条件扣减库存返回 0（并发下被抢空）")
+        void checkout_StockDeductFailed() {
+            Allure.step("准备购物车：商品A x2，下单前查询到的库存为 100（看似充足）");
+            CartItem cartItem = createCartItem(1L, USER_ID, 10L, 2, "测试商品A", new BigDecimal("99.00"));
+            Product productA = createProduct(10L, "测试商品A", new BigDecimal("99.00"), 100, 1);
+
+            CheckoutDTO dto = new CheckoutDTO();
+            dto.setReceiverName("张三");
+            dto.setReceiverPhone("13800138000");
+            dto.setReceiverAddress("北京市海淀区xxx路123号");
+
+            when(cartItemMapper.selectCartWithProduct(USER_ID))
+                    .thenReturn(Collections.singletonList(cartItem));
+            when(productMapper.selectById(10L)).thenReturn(productA);
+            when(orderMapper.insert(any(Order.class))).thenReturn(1);
+
+            Allure.step("Mock 条件扣减受影响行数为 0：说明扣减瞬间库存已被其他请求抢占");
+            when(productMapper.deductStock(anyLong(), anyInt())).thenReturn(0);
+
+            Allure.step("校验：抛出「库存不足」，整个下单事务回滚");
+            assertThatThrownBy(() -> orderService.checkout(USER_ID, dto))
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining("库存不足");
         }
 
         @Test

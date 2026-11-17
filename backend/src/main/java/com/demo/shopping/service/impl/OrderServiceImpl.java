@@ -95,9 +95,11 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
             orderItem.setQuantity(item.getQuantity());
             orderItemMapper.insert(orderItem);
 
-            // 扣减库存
-            product.setStock(product.getStock() - item.getQuantity());
-            productMapper.updateById(product);
+            // 扣减库存：使用条件更新，仅当库存充足时才会成功，避免并发超卖
+            int affected = productMapper.deductStock(product.getId(), item.getQuantity());
+            if (affected == 0) {
+                throw new BusinessException("商品「" + product.getName() + "」库存不足");
+            }
         }
 
         // 清除已结算的购物车项
