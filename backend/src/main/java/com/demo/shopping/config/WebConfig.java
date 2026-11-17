@@ -39,6 +39,7 @@ public class WebConfig implements WebMvcConfigurer {
                         "/api/products/list",
                         "/api/products/detail/**",
                         "/api/categories/list",
+                        "/api/banners/list",
                         // 推荐模块：埋点与公开推荐接口允许匿名访问（游客也能浏览热榜）
                         "/api/behavior/track",
                         "/api/recommend/hot",

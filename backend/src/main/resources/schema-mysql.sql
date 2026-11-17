@@ -100,6 +100,18 @@ CREATE TABLE IF NOT EXISTS `delivery_address` (
   INDEX `idx_user_id` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='收货地址表';
 
+-- 首页轮播图表
+CREATE TABLE IF NOT EXISTS `banner` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '轮播图ID',
+  `image_url` VARCHAR(500) NOT NULL COMMENT '图片地址（16:9）',
+  `title` VARCHAR(50) DEFAULT NULL COMMENT '标题（仅后台识别用）',
+  `sort` INT NOT NULL DEFAULT 0 COMMENT '排序值，越小越靠前',
+  `status` INT NOT NULL DEFAULT 1 COMMENT '状态: 1-上架, 0-下架',
+  `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='首页轮播图表';
+
 -- =============================================
 -- 智能推荐模块（用户画像 + 热门推荐 + 过滤推荐）
 -- =============================================

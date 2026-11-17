@@ -2,6 +2,7 @@ package com.demo.shopping.api;
 
 import com.demo.shopping.common.JwtUtils;
 import com.demo.shopping.mapper.*;
+import com.demo.shopping.service.BannerService;
 import com.demo.shopping.service.CaptchaService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.qameta.allure.Allure;
@@ -97,6 +98,13 @@ public abstract class BaseApiTest {
 
     @MockBean
     protected CaptchaService captchaService;
+
+    // BannerController / BannerService 依赖 BannerMapper，同样需要 Mock
+    @MockBean
+    protected BannerMapper bannerMapper;
+
+    @MockBean
+    protected BannerService bannerService;
 
     // ==================== Token 生成 ====================
 

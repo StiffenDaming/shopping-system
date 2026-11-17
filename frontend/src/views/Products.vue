@@ -20,16 +20,31 @@
         </div>
       </div>
 
-      <div v-if="hotProducts.length" class="hot-strip">
-        <div class="hot-head">
-          <span class="hot-title">热藏榜</span>
-          <span class="hot-sub">近 7 天最受关注的藏品</span>
+      <div class="hero-row">
+        <div class="hero-carousel">
+          <el-carousel v-if="banners.length" height="100%" :interval="4000" arrow="hover"
+                       indicator-position="inside">
+            <el-carousel-item v-for="b in banners" :key="b.id">
+              <img :src="b.imageUrl" :alt="b.title || '轮播图'" class="hero-img"
+                   @error="handleImgError" />
+            </el-carousel-item>
+          </el-carousel>
+          <div v-else class="hero-empty">暂无轮播图</div>
         </div>
-        <div class="hot-items">
-          <div v-for="(p, i) in hotProducts" :key="p.id" class="hot-item" @click="goDetail(p.id)">
-            <span class="hot-rank" :class="'r' + (i + 1)">{{ i + 1 }}</span>
-            <span class="hot-name">{{ p.name }}</span>
-            <span class="hot-reason">{{ p.reason }}</span>
+
+        <div v-if="hotProducts.length" class="hero-hot">
+          <div class="hot-head">
+            <span class="hot-title">热藏榜</span>
+            <span class="hot-sub">近 7 天</span>
+          </div>
+          <div class="hot-list">
+            <div v-for="(p, i) in hotProducts" :key="p.id" class="hot-item" @click="goDetail(p.id)">
+              <span class="hot-rank" :class="'r' + (i + 1)">{{ i + 1 }}</span>
+              <div class="hot-text">
+                <div class="hot-name">{{ p.name }}</div>
+                <div class="hot-reason">{{ p.reason }}</div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -94,6 +109,7 @@ const categories = ref([])
 const total = ref(0)
 const hotProducts = ref([])
 const forYou = ref([])
+const banners = ref([])
 
 const query = reactive({
   keyword: '',
@@ -117,10 +133,20 @@ async function loadProducts() {
   }
 }
 
-// 热藏榜：热度召回，游客也能看到
+// 首页轮播图
+async function loadBanners() {
+  try {
+    const res = await request.get('/banners/list')
+    banners.value = res.data || []
+  } catch (e) {
+    banners.value = []
+  }
+}
+
+// 热藏榜：热度召回，游客也能看到（右侧竖排，与轮播图等高）
 async function loadHot() {
   try {
-    const res = await request.get('/recommend/hot', { params: { limit: 5 } })
+    const res = await request.get('/recommend/hot', { params: { limit: 6 } })
     hotProducts.value = res.data || []
   } catch (e) {
     hotProducts.value = []
@@ -165,6 +191,7 @@ function handleImgError(e) {
 onMounted(() => {
   loadProducts()
   loadCategories()
+  loadBanners()
   loadHot()
   loadForYou()
 })
@@ -209,39 +236,79 @@ onMounted(() => {
 .empty { padding: 60px 0; }
 .pagination { display: flex; justify-content: center; margin-top: 30px; }
 
-/* 热藏榜 */
-.hot-strip {
-  background: #fff;
-  border-radius: 8px;
-  padding: 14px 20px;
+/* 首页 3:1 区域：左侧轮播图（16:9）+ 右侧热藏榜竖排，两者等高 */
+.hero-row {
+  display: flex;
+  gap: 16px;
   margin-bottom: 20px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+  align-items: stretch;
 }
-.hot-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 10px; }
-.hot-title { font-size: 16px; font-weight: bold; color: #e1251b; }
-.hot-sub { font-size: 12px; color: #999; }
-.hot-items { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 4px; }
-.hot-item {
-  flex: 0 0 auto;
+.hero-carousel {
+  flex: 3 1 0;
+  min-width: 0;
+  aspect-ratio: 16 / 9;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #f5f5f5;
+}
+.hero-carousel :deep(.el-carousel),
+.hero-carousel :deep(.el-carousel__container) {
+  height: 100%;
+}
+.hero-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.hero-empty {
+  height: 100%;
   display: flex;
   align-items: center;
-  gap: 8px;
-  background: #fafafa;
-  border-radius: 6px;
-  padding: 8px 12px;
-  cursor: pointer;
-  transition: background 0.2s;
+  justify-content: center;
+  color: #999;
+  font-size: 13px;
 }
-.hot-item:hover { background: #fff1ef; }
+.hero-hot {
+  flex: 1 1 0;
+  min-width: 0;
+  background: #fff;
+  border-radius: 8px;
+  padding: 12px 14px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.hot-head { display: flex; align-items: baseline; gap: 8px; margin-bottom: 8px; flex: 0 0 auto; }
+.hot-title { font-size: 15px; font-weight: bold; color: #e1251b; }
+.hot-sub { font-size: 11px; color: #999; }
+.hot-list {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 0;
+}
+.hot-item { display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 3px 0; min-height: 0; }
+.hot-item:hover .hot-name { color: #e1251b; }
 .hot-rank {
-  width: 20px; height: 20px; line-height: 20px; text-align: center;
-  border-radius: 4px; font-size: 12px; color: #fff; background: #c0c4cc;
+  flex: 0 0 18px;
+  width: 18px; height: 18px; line-height: 18px; text-align: center;
+  border-radius: 4px; font-size: 11px; color: #fff; background: #c0c4cc;
 }
 .hot-rank.r1 { background: #e1251b; }
 .hot-rank.r2 { background: #f56c6c; }
 .hot-rank.r3 { background: #f89898; }
-.hot-name { font-size: 13px; color: #333; max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.hot-reason { font-size: 11px; color: #999; }
+.hot-text { min-width: 0; flex: 1 1 auto; }
+.hot-name {
+  font-size: 13px; color: #333;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.hot-reason {
+  font-size: 11px; color: #999;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+@media (max-width: 900px) {
+  .hero-row { flex-direction: column; }
+  .hero-carousel { width: 100%; }
+  .hero-hot { height: 300px; }
+}
 
 /* 为你推荐 */
 .rec-section { margin-top: 40px; }

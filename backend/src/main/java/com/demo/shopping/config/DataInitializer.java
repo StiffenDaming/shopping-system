@@ -26,6 +26,9 @@ public class DataInitializer implements CommandLineRunner {
     private ProductMapper productMapper;
 
     @Resource
+    private BannerMapper bannerMapper;
+
+    @Resource
     private PasswordEncoder passwordEncoder;
 
     @Override
@@ -33,7 +36,31 @@ public class DataInitializer implements CommandLineRunner {
         initUsers();
         initCategories();
         initProducts();
+        initBanners();
         log.info("数据初始化完成");
+    }
+
+    private void initBanners() {
+        if (bannerMapper.selectCount(null) > 0) {
+            return;
+        }
+        // 轮播图统一为 16:9，托管在 OSS
+        String oss = "https://shopping-system.oss-cn-guangzhou.aliyuncs.com/%E8%BD%AE%E6%92%AD%E5%9B%BE/";
+        Object[][] data = {
+                {"馆藏卡牌", oss + "Card.jpg"},
+                {"钱币票证", oss + "coin.jpg"},
+                {"书信文献", oss + "letter.jpg"},
+                {"邮票珍藏", oss + "postage-stamp.jpg"},
+        };
+        for (int i = 0; i < data.length; i++) {
+            Banner banner = new Banner();
+            banner.setTitle((String) data[i][0]);
+            banner.setImageUrl((String) data[i][1]);
+            banner.setSort(i + 1);
+            banner.setStatus(1);
+            bannerMapper.insert(banner);
+        }
+        log.info("初始化轮播图数据: {} 张", data.length);
     }
 
     private void initUsers() {
