@@ -22,4 +22,10 @@ public class RegisterDTO {
 
     @Pattern(regexp = "^$|^[\\w.-]+@[\\w.-]+\\.[a-zA-Z]{2,}$", message = "邮箱格式不正确")
     private String email;
+
+    /** 图形验证码标识（由 GET /api/auth/captcha 下发） */
+    private String captchaId;
+
+    /** 用户填写的图形验证码 */
+    private String captchaCode;
 }

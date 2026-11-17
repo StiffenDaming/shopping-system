@@ -2,6 +2,7 @@ package com.demo.shopping.api;
 
 import com.demo.shopping.common.JwtUtils;
 import com.demo.shopping.mapper.*;
+import com.demo.shopping.service.CaptchaService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.qameta.allure.Allure;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -90,6 +91,12 @@ public abstract class BaseApiTest {
 
     @MockBean
     protected InteractionMapper interactionMapper;
+
+    // ==================== 图形验证码服务 ====================
+    // AuthController 依赖 CaptchaService，而 @WebMvcTest 只加载 Web 层，需显式 Mock
+
+    @MockBean
+    protected CaptchaService captchaService;
 
     // ==================== Token 生成 ====================
 

@@ -11,6 +11,7 @@ import com.demo.shopping.dto.LoginVO;
 import com.demo.shopping.dto.RegisterDTO;
 import com.demo.shopping.entity.User;
 import com.demo.shopping.mapper.UserMapper;
+import com.demo.shopping.service.CaptchaService;
 import com.demo.shopping.service.UserService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -29,6 +30,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Resource
     private JwtUtils jwtUtils;
+
+    @Resource
+    private CaptchaService captchaService;
 
     @Override
     public LoginVO login(LoginDTO dto) {
@@ -56,6 +60,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public void register(RegisterDTO dto) {
+        // 图形验证码校验：错误或过期直接拒绝，避免被脚本批量注册
+        if (!captchaService.verify(dto.getCaptchaId(), dto.getCaptchaCode())) {
+            throw new BusinessException("验证码错误或已过期，请刷新后重试");
+        }
+
         Long count = baseMapper.selectCount(new LambdaQueryWrapper<User>()
                 .eq(User::getUsername, dto.getUsername()));
         if (count > 0) {

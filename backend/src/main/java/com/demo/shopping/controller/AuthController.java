@@ -2,10 +2,12 @@ package com.demo.shopping.controller;
 
 import com.demo.shopping.common.Result;
 import com.demo.shopping.common.UserContext;
+import com.demo.shopping.dto.CaptchaVO;
 import com.demo.shopping.dto.LoginDTO;
 import com.demo.shopping.dto.LoginVO;
 import com.demo.shopping.dto.RegisterDTO;
 import com.demo.shopping.entity.User;
+import com.demo.shopping.service.CaptchaService;
 import com.demo.shopping.service.UserService;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,6 +23,17 @@ public class AuthController {
 
     @Resource
     private UserService userService;
+
+    @Resource
+    private CaptchaService captchaService;
+
+    /**
+     * 获取图形验证码（注册页使用，无需登录）
+     */
+    @GetMapping("/captcha")
+    public Result<CaptchaVO> captcha() {
+        return Result.success(captchaService.create());
+    }
 
     @PostMapping("/login")
     public Result<LoginVO> login(@Valid @RequestBody LoginDTO dto) {
