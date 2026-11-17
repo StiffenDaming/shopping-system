@@ -51,7 +51,6 @@ class AuthApiTest extends BaseApiTest {
             loginVO.setUserId(1L);
             loginVO.setUsername("admin");
             loginVO.setRole("ADMIN");
-            loginVO.setAvatar("/avatar/admin.png");
             loginVO.setToken("mock-jwt-token");
             when(userService.login(any(LoginDTO.class))).thenReturn(loginVO);
 
@@ -169,7 +168,6 @@ class AuthApiTest extends BaseApiTest {
             user.setId(2L);
             user.setUsername("testuser");
             user.setEmail("test@test.com");
-            user.setPhone("13800000002");
             user.setRole("USER");
             user.setStatus(1);
             when(userService.getUserInfo(2L)).thenReturn(user);

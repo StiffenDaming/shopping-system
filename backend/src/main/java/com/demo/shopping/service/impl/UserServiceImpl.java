@@ -50,7 +50,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         vo.setUserId(user.getId());
         vo.setUsername(user.getUsername());
         vo.setRole(user.getRole());
-        vo.setAvatar(user.getAvatar());
         vo.setToken(token);
         return vo;
     }
@@ -92,15 +91,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         update.setId(userId);
         update.setPassword(passwordEncoder.encode(newPassword));
         baseMapper.updateById(update);
-    }
-
-    @Override
-    public void updateProfile(Long userId, User user) {
-        user.setId(userId);
-        user.setPassword(null);
-        user.setRole(null);
-        user.setStatus(null);
-        baseMapper.updateById(user);
     }
 
     // ===== 管理员功能 =====

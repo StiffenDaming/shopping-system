@@ -37,9 +37,6 @@ jwt:
   secret: ZGVtbw==c2hvcHBpbmctc2VjcmV0LWtleS1mb3Itand0LXNpZ25pbmctMjAyNg==
   expiration: 86400000  # 24小时(毫秒)
 
-# 业务配置
-app:
-  upload-path: ./uploads/
 
 # 大模型配置（DeepSeek）
 # API Key 通过环境变量注入，切勿写入代码或提交到仓库：

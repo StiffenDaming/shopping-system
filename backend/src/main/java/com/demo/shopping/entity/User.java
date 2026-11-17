@@ -23,10 +23,6 @@ public class User {
 
     private String email;
 
-    private String phone;
-
-    private String avatar;
-
     /** 角色: USER-普通用户, ADMIN-管理员 */
     private String role;
 

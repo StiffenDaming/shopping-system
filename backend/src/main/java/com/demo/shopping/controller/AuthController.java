@@ -42,12 +42,6 @@ public class AuthController {
     public Result<Void> updatePassword(@RequestParam String oldPassword,
                                        @RequestParam String newPassword) {
         userService.updatePassword(UserContext.getCurrentId(), oldPassword, newPassword);
-        return Result.success("密码修改成功", null);
-    }
-
-    @PutMapping("/profile")
-    public Result<Void> updateProfile(@RequestBody User user) {
-        userService.updateProfile(UserContext.getCurrentId(), user);
-        return Result.success("个人信息更新成功", null);
+        return Result.success("密码修改成功，请重新登录", null);
     }
 }

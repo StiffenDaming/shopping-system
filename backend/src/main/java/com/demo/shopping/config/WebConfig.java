@@ -4,7 +4,6 @@ import com.demo.shopping.interceptor.JwtInterceptor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
-import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
@@ -39,7 +38,6 @@ public class WebConfig implements WebMvcConfigurer {
                         "/api/products/list",
                         "/api/products/detail/**",
                         "/api/categories/list",
-                        "/uploads/**",
                         // 推荐模块：埋点与公开推荐接口允许匿名访问（游客也能浏览热榜）
                         "/api/behavior/track",
                         "/api/recommend/hot",
@@ -48,9 +46,4 @@ public class WebConfig implements WebMvcConfigurer {
                 );
     }
 
-    @Override
-    public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        registry.addResourceHandler("/uploads/**")
-                .addResourceLocations("file:./uploads/");
-    }
 }

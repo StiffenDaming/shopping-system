@@ -8,8 +8,6 @@ CREATE TABLE IF NOT EXISTS `sys_user` (
   `username` VARCHAR(50) NOT NULL COMMENT '用户名',
   `password` VARCHAR(100) NOT NULL COMMENT '密码(BCrypt加密)',
   `email` VARCHAR(100) COMMENT '邮箱',
-  `phone` VARCHAR(20) COMMENT '手机号',
-  `avatar` VARCHAR(255) COMMENT '头像URL',
   `role` VARCHAR(20) NOT NULL DEFAULT 'USER' COMMENT '角色: USER-普通用户, ADMIN-管理员',
   `status` INT NOT NULL DEFAULT 1 COMMENT '状态: 1-正常, 0-禁用',
   `last_view_orders_time` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '上次查看订单列表的时间（用于红点提示）',
