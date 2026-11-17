@@ -27,6 +27,7 @@
               <el-dropdown-menu>
                 <el-dropdown-item command="orders">我的订单</el-dropdown-item>
                 <el-dropdown-item command="address">收货地址</el-dropdown-item>
+                <el-dropdown-item command="profile">个人中心</el-dropdown-item>
                 <el-dropdown-item v-if="userStore.isAdmin" command="admin" divided>管理后台</el-dropdown-item>
                 <el-dropdown-item command="logout" divided>退出登录</el-dropdown-item>
               </el-dropdown-menu>
@@ -82,6 +83,8 @@ function handleCommand(cmd) {
     router.push('/orders')
   } else if (cmd === 'address') {
     router.push('/address')
+  } else if (cmd === 'profile') {
+    router.push('/profile')
   }
 }
 
