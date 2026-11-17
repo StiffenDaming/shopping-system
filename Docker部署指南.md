@@ -119,7 +119,26 @@ docker compose up -d --build
 
 ---
 
-## 五、Navicat 连接 Docker 里的 MySQL
+## 五、推荐模块与大模型 Key
+
+推荐模块的标签抽取依赖大模型 API，Key 通过环境变量注入，不写入镜像与配置文件：
+
+```bash
+LLM_API_KEY=sk-xxxx docker compose up -d --build
+```
+
+未注入时系统正常启动，标签抽取自动降级为词典规则，其余功能不受影响。
+
+部署后可用以下接口确认状态（需管理员 Token）：
+
+```bash
+curl http://localhost:8081/api/admin/recommend/status -H "Authorization: Bearer <token>"
+# {"llmEnabled":true,"productCount":19}
+```
+
+---
+
+## 六、Navicat 连接 Docker 里的 MySQL
 
 | 字段 | 值 |
 |------|-----|
@@ -153,12 +172,26 @@ docker exec -i shopping-mysql mysql -uroot -p123456 shopping < backup.sql
 # 1. 拉取最新代码
 git pull
 
-# 2. 重新构建并启动
+# 2. 重新构建并启动（必须带 --build）
 docker compose up -d --build
 
 # 3. 只重建后端（前端没变的话更快）
 docker compose up -d --build backend
 ```
+
+> **注意**：`docker compose up -d` 不会重新构建镜像。不加 `--build`，容器里跑的还是旧镜像，
+> 表现为「改了代码但页面/接口没变化」。
+
+### 确认容器确实用的是新镜像
+
+```bash
+curl http://localhost/build-info.json
+# 返回镜像内构建时间戳，例如 2026-11-17T09:05:38Z
+```
+
+时间戳停留在旧值 → 镜像没重建。
+时间戳是新的但页面仍旧 → 浏览器缓存，`Ctrl + Shift + R` 硬刷新；详见
+[docs/前端缓存与部署刷新笔记.md](docs/前端缓存与部署刷新笔记.md)。
 
 ---
 
@@ -172,6 +205,7 @@ docker compose up -d --build backend
 |------|--------|------|
 | SPRING_PROFILES_ACTIVE | docker | 使用的 profile |
 | TZ | Asia/Shanghai | 时区 |
+| LLM_API_KEY | 空 | 大模型 API Key，为空时标签抽取降级为规则匹配 |
 
 如果要改数据库密码等，修改 `docker-compose.yml` 里的环境变量即可。
 
@@ -219,6 +253,19 @@ backend:
 服务器内存不足 2GB 时，Maven 构建可能 OOM。解决方案：
 - 加大服务器内存
 - 或者本地构建好 jar 包，Dockerfile 直接复制 jar（多阶段构建的第二阶段）
+
+---
+
+### Q5: 构建失败，报 `invalid file request node_modules/.bin/esbuild`
+
+构建上下文包含了宿主机的 `node_modules`，其中的符号链接在 WSL 路径上无法处理。
+确认 `frontend/.dockerignore` 与 `backend/.dockerignore` 存在，且都包含 `node_modules` / `target`。
+这两个文件必须提交到仓库。
+
+### Q6: 构建失败，报 `npm ci` 找不到 package-lock.json
+
+`frontend/Dockerfile` 使用 `npm ci` 构建，必须有 `package-lock.json`。
+该文件同样必须提交到仓库，`.gitignore` 中已放行。
 
 ---
 

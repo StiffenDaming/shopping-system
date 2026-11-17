@@ -1,14 +1,15 @@
-# 零号藏馆系统（Graduation Project）
+# 收藏品商城系统（Graduation Project）
 
-基于 SpringBoot + Vue3 的零号藏馆系统，仿 saucedemo.com，支持用户端和管理端双角色，含完整 CRUD 操作。
+基于 SpringBoot + Vue3 的收藏品商城系统，支持用户端与管理端双角色，并在传统电商功能之上实现了
+基于用户画像的个性化推荐模块（行为埋点、画像构建、热度榜、混合推荐、大语言模型标签抽取）。
 
 ## 项目概述
 
-- **项目名称**: 零号藏馆系统
+- **项目名称**: 收藏品商城系统
 - **技术栈**: Java 11 + SpringBoot 2.7 + MyBatis-Plus + JWT + Vue3 + Vite + Element Plus
 - **数据库**: MySQL 8.0（Docker 部署 / 本地安装均可）
 - **角色**: 管理员（ADMIN）+ 普通用户（USER）
-- **功能模块**: 商品浏览、购物车、下单支付、订单管理、用户管理、商品管理、数据统计
+- **功能模块**: 商品浏览、购物车、下单支付、订单管理、用户管理、商品管理、数据统计、个性化推荐
 
 ## 项目结构
 
@@ -134,6 +135,16 @@ docker compose up -d
 - [x] 订单管理（列表、详情、发货、强制完成、状态筛选）
 - [x] 分类管理（列表、增删改）
 
+### 推荐模块功能（新增）
+- [x] 用户行为埋点（浏览、加购、搜索，游客可匿名上报）
+- [x] 用户画像构建（时间衰减聚合、标签与分类偏好向量、活跃度）
+- [x] 热门藏品榜（多行为加权 + 近 7 天窗口）
+- [x] 猜你喜欢（基于内容的过滤，余弦相似度）
+- [x] 为你推荐（内容 + 热度 + 协同的混合加权，含冷启动兜底）
+- [x] 管理端用户画像查看（画像列表与详情）
+- [x] 大模型商品标签抽取（离线执行，未配置 Key 时降级为规则匹配）
+- [x] 推荐算法离线评估脚本（Precision / Recall / HR / NDCG / 覆盖率 / 多样性）
+
 ## API 接口清单
 
 ### 认证接口
@@ -211,6 +222,25 @@ docker compose up -d
 | 方法 | 路径 | 说明 | 权限 |
 |------|------|------|------|
 | POST | /api/upload | 上传图片 | 登录 |
+
+### 推荐相关接口
+
+| 方法 | 路径 | 说明 | 权限 |
+|------|------|------|------|
+| POST | /api/behavior/track | 行为埋点上报 | 公开（游客可用） |
+| GET | /api/recommend/hot | 热门藏品榜 | 公开 |
+| GET | /api/recommend/similar/{id} | 相似藏品 | 公开 |
+| GET | /api/recommend/for-you | 为你推荐 | 公开（未登录退化为热榜） |
+
+### 管理端推荐接口
+
+| 方法 | 路径 | 说明 | 权限 |
+|------|------|------|------|
+| GET | /api/admin/recommend/profiles | 用户画像列表 | 管理员 |
+| GET | /api/admin/recommend/profile/{userId} | 用户画像详情 | 管理员 |
+| POST | /api/admin/recommend/extract-tags | 触发商品标签抽取 | 管理员 |
+| POST | /api/admin/recommend/rebuild | 重算热度与画像 | 管理员 |
+| GET | /api/admin/recommend/status | 推荐模块运行状态 | 管理员 |
 
 ## 数据库表结构
 
@@ -303,6 +333,55 @@ docker compose up -d
 | create_time | DATETIME | 创建时间 |
 | update_time | DATETIME | 更新时间 |
 
+### user_behavior（用户行为日志表）
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| id | BIGINT | 行为ID |
+| user_id | BIGINT | 用户ID（0 表示游客） |
+| product_id | BIGINT | 商品ID |
+| behavior_type | VARCHAR(20) | VIEW / CART / ORDER / SEARCH |
+| weight | DECIMAL(4,2) | 行为基础权重（浏览1/加购3/下单5） |
+| stay_ms | INT | 页面停留时长（毫秒） |
+| keyword | VARCHAR(100) | 搜索关键词 |
+| scene | VARCHAR(50) | 来源场景 |
+| create_time | DATETIME | 发生时间 |
+
+### product_tag（商品标签表）
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| id | BIGINT | 标签ID |
+| product_id | BIGINT | 商品ID |
+| tag_name | VARCHAR(50) | 标签名 |
+| tag_type | VARCHAR(20) | SUBJECT / MATERIAL / STYLE / ERA / SCENE |
+| weight | DECIMAL(4,2) | 标签权重 |
+| source | VARCHAR(20) | LLM / RULE / MANUAL |
+| create_time | DATETIME | 创建时间 |
+
+### user_profile（用户画像表）
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| id | BIGINT | 画像ID |
+| user_id | BIGINT | 用户ID（唯一） |
+| tag_vector | TEXT | 标签偏好向量（JSON） |
+| category_vector | TEXT | 分类偏好向量（JSON） |
+| price_pref | DECIMAL(10,2) | 价格偏好（加权均价） |
+| activity_level | VARCHAR(20) | 活跃度 HIGH / MID / LOW |
+| view_cnt / cart_cnt / order_cnt | INT | 累计行为次数 |
+| update_time | DATETIME | 更新时间 |
+
+### product_hot（商品热度表）
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| id | BIGINT | 热度ID |
+| product_id | BIGINT | 商品ID |
+| hot_score | DECIMAL(12,4) | 热度分 |
+| view_cnt / cart_cnt / order_cnt | INT | 近7天行为计数 |
+| stat_date | DATE | 统计日期 |
+
 ## 技术架构说明
 
 ### 后端架构
@@ -350,9 +429,11 @@ PENDING（待发货）
 
 系统首次启动时自动初始化以下数据：
 
-- **用户**: admin (管理员), user (普通用户) — 密码均为 123456
-- **分类**: 服装、电子产品、图书、食品、运动户外 (共 5 个)
-- **商品**: 14 件（含 Sauce Labs 系列 6 件 + 中文商品 8 件）
+- **用户**: admin（管理员）、user（普通用户）— 密码均为 123456
+- **分类**: 7 个（文玩雅器、古玩雕像、书刊影集、钱币票证、潮玩盲盒、动漫游戏周边、镇馆之宝）
+- **商品**: 19 件收藏品
+- **推荐数据**: 商品标签需调用管理端接口抽取；模拟行为数据由 `tools/generate_sim_data.py` 生成
+- **模拟用户**: sim001 ~ sim200，密码均为 123456（导入模拟数据后可用）
 
 ## 部署建议（生产环境）
 
@@ -406,5 +487,8 @@ npm install
 
 ## 更多文档
 
-- [从零启动指南.md](从零启动指南.md) — 本地开发完整启动步骤
+- [从零启动指南.md](从零启动指南.md) — 本地开发完整启动步骤、推荐模块配置、排错
 - [Docker部署指南.md](Docker部署指南.md) — Docker 部署完整说明
+- [docs/前端缓存与部署刷新笔记.md](docs/前端缓存与部署刷新笔记.md) — 缓存机制与部署刷新
+- [docs/实验数据-推荐算法评估.md](docs/实验数据-推荐算法评估.md) — 推荐算法离线评估数据
+- [docs/推荐模块-实现说明.md](docs/推荐模块-实现说明.md) — 推荐模块设计决策、验证数据与论文改动对照
