@@ -22,11 +22,13 @@ shopping-system/
 │   │   ├── ShoppingApplication.java    # 启动类
 │   │   ├── common/              # 公共模块（Result、JWT、异常处理）
 │   │   ├── config/              # 配置类（MyBatis-Plus、Web、数据初始化）
-│   │   ├── controller/          # 控制器层（7个）
-│   │   ├── dto/                 # 数据传输对象
-│   │   ├── entity/              # 实体类（6个）
+│   │   ├── controller/          # 控制器层（11 个）
+│   │   ├── dto/                 # 数据传输对象（10 个）
+│   │   ├── entity/              # 实体类（11 个）
 │   │   ├── interceptor/         # JWT 拦截器
 │   │   ├── mapper/              # MyBatis-Plus Mapper
+│   │   ├── recommend/           # 推荐模块（画像、召回、排序、大模型客户端）
+│   │   ├── job/                 # 定时任务（热度与画像重算）
 │   │   └── service/             # 业务逻辑层
 │   └── src/main/resources/
 │       ├── application.yml      # 应用配置（mysql / docker 双 Profile）
