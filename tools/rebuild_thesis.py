@@ -14,7 +14,10 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.oxml.ns import qn
 
 BASE = r"\\wsl.localhost\Ubuntu\home\emperor\Project\shopping-system"
-SRC = os.path.join(BASE, "零号藏馆商城系统-毕业论文.docx")
+# SRC 是"模板底稿"，务必保留：脚本每次都从它重新生成论文，
+# 并顺带把正文中的旧品牌名「零号藏馆」批量替换为「收藏品商城」。
+# 注意：不要把 SRC 指向 DST（生成结果），否则每次重新生成都会重复套用改动。
+SRC = os.path.join(BASE, "原始论文底稿.docx")
 DST = os.path.join(BASE, "基于Spring Boot的收藏品商城系统.docx")
 FIG = os.path.join(BASE, "docs", "figures")
 
