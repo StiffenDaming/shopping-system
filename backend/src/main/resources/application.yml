@@ -34,6 +34,29 @@ jwt:
 app:
   upload-path: ./uploads/
 
+# 大模型配置（DeepSeek）
+# API Key 通过环境变量注入，切勿写入代码或提交到仓库：
+#   export LLM_API_KEY=sk-xxxx
+# 未配置时，标签抽取与推荐理由生成自动降级为规则策略，不影响系统其他功能。
+llm:
+  api-key: ${LLM_API_KEY:}
+  base-url: ${LLM_BASE_URL:https://api.deepseek.com}
+  model: ${LLM_MODEL:deepseek-flash}
+  timeout-seconds: 30
+
+# 推荐模块配置
+recommend:
+  # 时间衰减系数 λ：权重 = 基础权重 × exp(-λ × 天数)，λ=0.05 约等于 14 天半衰期
+  decay-lambda: 0.05
+  # 热度分权重：订单、加购、浏览
+  hot-weight-order: 3
+  hot-weight-cart: 2
+  hot-weight-view: 1
+  # 混合推荐权重：内容过滤、热度、协同过滤
+  hybrid-alpha: 0.6
+  hybrid-beta: 0.3
+  hybrid-gamma: 0.1
+
 ---
 # ===== MySQL 本地开发配置 =====
 spring:

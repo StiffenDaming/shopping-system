@@ -1,0 +1,6 @@
+target
+.allure
+data
+.idea
+.vscode
+*.log

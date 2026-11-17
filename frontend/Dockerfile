@@ -9,7 +9,9 @@ RUN npm ci --registry=https://registry.npmmirror.com
 
 # 复制源码并构建
 COPY . .
-RUN npm run build
+# 同时写入构建时间戳，用于确认容器里跑的到底是不是新镜像
+RUN npm run build \
+    && date -u +"%Y-%m-%dT%H:%M:%SZ" > /app/dist/build-info.json
 
 # ===== 运行阶段 =====
 FROM nginx:alpine

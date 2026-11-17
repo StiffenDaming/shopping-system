@@ -20,6 +20,20 @@
         </div>
       </div>
 
+      <div v-if="hotProducts.length" class="hot-strip">
+        <div class="hot-head">
+          <span class="hot-title">热藏榜</span>
+          <span class="hot-sub">近 7 天最受关注的藏品</span>
+        </div>
+        <div class="hot-items">
+          <div v-for="(p, i) in hotProducts" :key="p.id" class="hot-item" @click="goDetail(p.id)">
+            <span class="hot-rank" :class="'r' + (i + 1)">{{ i + 1 }}</span>
+            <span class="hot-name">{{ p.name }}</span>
+            <span class="hot-reason">{{ p.reason }}</span>
+          </div>
+        </div>
+      </div>
+
       <div v-loading="loading" class="product-grid">
         <div v-for="p in products" :key="p.id" class="product-card" @click="goDetail(p.id)">
           <div class="product-img">
@@ -43,6 +57,21 @@
       <div class="pagination" v-if="total > 0">
         <el-pagination background layout="prev, pager, next" :total="total" :page-size="query.size" v-model:current-page="query.page" @current-change="loadProducts" />
       </div>
+
+      <div v-if="forYou.length" class="rec-section">
+        <div class="rec-head">
+          <span class="rec-title">为你推荐</span>
+          <span class="rec-sub">基于你的浏览与加购偏好</span>
+        </div>
+        <div class="rec-list">
+          <div v-for="p in forYou" :key="p.id" class="rec-card" @click="goDetail(p.id)">
+            <img :src="p.imageUrl" :alt="p.name" @error="handleImgError" />
+            <div class="rec-name">{{ p.name }}</div>
+            <div class="rec-price">¥{{ p.price }}</div>
+            <div class="rec-reason">{{ p.reason }}</div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -54,6 +83,7 @@ import { ElMessage } from 'element-plus'
 import UserHeader from '../components/UserHeader.vue'
 import { useUserStore } from '../stores/user'
 import request from '../utils/request'
+import { track, trackSearch } from '../utils/track'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -62,6 +92,8 @@ const loading = ref(false)
 const products = ref([])
 const categories = ref([])
 const total = ref(0)
+const hotProducts = ref([])
+const forYou = ref([])
 
 const query = reactive({
   keyword: '',
@@ -77,8 +109,31 @@ async function loadProducts() {
     const res = await request.get('/products/list', { params: query })
     products.value = res.data.records
     total.value = res.data.total
+    if (query.keyword) {
+      trackSearch(query.keyword)
+    }
   } finally {
     loading.value = false
+  }
+}
+
+// 热藏榜：热度召回，游客也能看到
+async function loadHot() {
+  try {
+    const res = await request.get('/recommend/hot', { params: { limit: 5 } })
+    hotProducts.value = res.data || []
+  } catch (e) {
+    hotProducts.value = []
+  }
+}
+
+// 为你推荐：未登录时后端自动退化为热度榜（冷启动）
+async function loadForYou() {
+  try {
+    const res = await request.get('/recommend/for-you', { params: { limit: 4 } })
+    forYou.value = res.data || []
+  } catch (e) {
+    forYou.value = []
   }
 }
 
@@ -100,6 +155,7 @@ async function addToCart(productId) {
   await request.post('/cart', null, { params: { productId, quantity: 1 } })
   ElMessage.success('已加入购物车')
   headerRef.value?.fetchCartCount()
+  track({ productId, behaviorType: 'CART', scene: 'LIST' })
 }
 
 function handleImgError(e) {
@@ -109,6 +165,8 @@ function handleImgError(e) {
 onMounted(() => {
   loadProducts()
   loadCategories()
+  loadHot()
+  loadForYou()
 })
 </script>
 
@@ -150,4 +208,55 @@ onMounted(() => {
 .product-bottom { display: flex; justify-content: space-between; align-items: center; }
 .empty { padding: 60px 0; }
 .pagination { display: flex; justify-content: center; margin-top: 30px; }
+
+/* 热藏榜 */
+.hot-strip {
+  background: #fff;
+  border-radius: 8px;
+  padding: 14px 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+}
+.hot-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 10px; }
+.hot-title { font-size: 16px; font-weight: bold; color: #e1251b; }
+.hot-sub { font-size: 12px; color: #999; }
+.hot-items { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 4px; }
+.hot-item {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #fafafa;
+  border-radius: 6px;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.hot-item:hover { background: #fff1ef; }
+.hot-rank {
+  width: 20px; height: 20px; line-height: 20px; text-align: center;
+  border-radius: 4px; font-size: 12px; color: #fff; background: #c0c4cc;
+}
+.hot-rank.r1 { background: #e1251b; }
+.hot-rank.r2 { background: #f56c6c; }
+.hot-rank.r3 { background: #f89898; }
+.hot-name { font-size: 13px; color: #333; max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hot-reason { font-size: 11px; color: #999; }
+
+/* 为你推荐 */
+.rec-section { margin-top: 40px; }
+.rec-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 14px; }
+.rec-title { font-size: 18px; font-weight: bold; color: #333; }
+.rec-sub { font-size: 12px; color: #999; }
+.rec-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }
+.rec-card {
+  background: #fff; border-radius: 8px; padding: 12px;
+  cursor: pointer; transition: box-shadow 0.2s, transform 0.2s;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+.rec-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.12); transform: translateY(-2px); }
+.rec-card img { width: 100%; height: 110px; object-fit: contain; background: #f5f5f5; border-radius: 4px; }
+.rec-name { font-size: 13px; color: #333; margin-top: 8px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rec-price { font-size: 15px; color: #e1251b; font-weight: bold; margin-top: 4px; }
+.rec-reason { font-size: 11px; color: #909399; margin-top: 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 </style>

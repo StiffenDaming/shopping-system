@@ -32,6 +32,9 @@ services:
     environment:
       SPRING_PROFILES_ACTIVE: docker
       TZ: Asia/Shanghai
+      # 大模型 Key 从宿主机环境变量注入，不写入镜像、不提交仓库
+      # 用法: LLM_API_KEY=sk-xxx docker compose up -d
+      LLM_API_KEY: ${LLM_API_KEY:-}
     ports:
       - "8081:8080"
     depends_on:

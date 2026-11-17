@@ -15,6 +15,9 @@
         <el-menu-item index="/admin/orders">
           <el-icon><List /></el-icon><span>订单管理</span>
         </el-menu-item>
+        <el-menu-item index="/admin/profiles">
+          <el-icon><PieChart /></el-icon><span>用户画像</span>
+        </el-menu-item>
       </el-menu>
       <div class="sidebar-bottom">
         <el-button text @click="$router.push('/products')">

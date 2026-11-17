@@ -101,3 +101,68 @@ CREATE TABLE IF NOT EXISTS `delivery_address` (
   PRIMARY KEY (`id`),
   INDEX `idx_user_id` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='收货地址表';
+
+-- =============================================
+-- 智能推荐模块（用户画像 + 热门推荐 + 过滤推荐）
+-- =============================================
+
+-- 用户行为日志表：推荐算法的数据地基
+CREATE TABLE IF NOT EXISTS `user_behavior` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '行为ID',
+  `user_id` BIGINT NOT NULL DEFAULT 0 COMMENT '用户ID（0=游客）',
+  `product_id` BIGINT DEFAULT NULL COMMENT '商品ID',
+  `behavior_type` VARCHAR(20) NOT NULL COMMENT '行为类型: VIEW-浏览, CART-加购, ORDER-下单, SEARCH-搜索',
+  `weight` DECIMAL(4,2) NOT NULL DEFAULT 1.00 COMMENT '行为基础权重',
+  `stay_ms` INT NOT NULL DEFAULT 0 COMMENT '页面停留时长(毫秒)',
+  `keyword` VARCHAR(100) DEFAULT NULL COMMENT '搜索关键词(SEARCH时)',
+  `scene` VARCHAR(50) DEFAULT NULL COMMENT '来源场景: LIST/DETAIL/CART/SEARCH',
+  `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '发生时间',
+  PRIMARY KEY (`id`),
+  INDEX `idx_user_time` (`user_id`, `create_time`),
+  INDEX `idx_product_time` (`product_id`, `create_time`),
+  INDEX `idx_type_time` (`behavior_type`, `create_time`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户行为日志表';
+
+-- 商品标签表：由大模型从商品描述中抽取的结构化特征
+CREATE TABLE IF NOT EXISTS `product_tag` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '标签ID',
+  `product_id` BIGINT NOT NULL COMMENT '商品ID',
+  `tag_name` VARCHAR(50) NOT NULL COMMENT '标签名',
+  `tag_type` VARCHAR(20) NOT NULL DEFAULT 'GENERAL' COMMENT '标签类型: SUBJECT-题材, MATERIAL-材质, STYLE-风格, ERA-年代, SCENE-场景',
+  `weight` DECIMAL(4,2) NOT NULL DEFAULT 1.00 COMMENT '标签权重',
+  `source` VARCHAR(20) NOT NULL DEFAULT 'LLM' COMMENT '来源: LLM-大模型, MANUAL-人工, RULE-规则',
+  `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_product_tag` (`product_id`, `tag_name`),
+  INDEX `idx_tag_name` (`tag_name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='商品标签表';
+
+-- 用户画像表：由行为日志聚合出的标签偏好向量
+CREATE TABLE IF NOT EXISTS `user_profile` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '画像ID',
+  `user_id` BIGINT NOT NULL COMMENT '用户ID',
+  `tag_vector` TEXT COMMENT '标签偏好向量 JSON: {"tag":weight}',
+  `category_vector` TEXT COMMENT '分类偏好向量 JSON: {"categoryId":weight}',
+  `price_pref` DECIMAL(10,2) DEFAULT NULL COMMENT '价格偏好(加权均价)',
+  `activity_level` VARCHAR(20) NOT NULL DEFAULT 'LOW' COMMENT '活跃度: HIGH/MID/LOW',
+  `view_cnt` INT NOT NULL DEFAULT 0 COMMENT '累计浏览次数',
+  `cart_cnt` INT NOT NULL DEFAULT 0 COMMENT '累计加购次数',
+  `order_cnt` INT NOT NULL DEFAULT 0 COMMENT '累计下单次数',
+  `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_user` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户画像表';
+
+-- 商品热度表：按天统计的加权热度分
+CREATE TABLE IF NOT EXISTS `product_hot` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '热度ID',
+  `product_id` BIGINT NOT NULL COMMENT '商品ID',
+  `hot_score` DECIMAL(12,4) NOT NULL DEFAULT 0 COMMENT '热度分',
+  `view_cnt` INT NOT NULL DEFAULT 0 COMMENT '近7天浏览数',
+  `cart_cnt` INT NOT NULL DEFAULT 0 COMMENT '近7天加购数',
+  `order_cnt` INT NOT NULL DEFAULT 0 COMMENT '近7天下单数',
+  `stat_date` DATE NOT NULL COMMENT '统计日期',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_product_date` (`product_id`, `stat_date`),
+  INDEX `idx_date_score` (`stat_date`, `hot_score`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='商品热度表';

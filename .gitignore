@@ -48,8 +48,9 @@ bin/
 **/.vite/
 **/vite.config.js.timestamp-*
 
-# npm / yarn / pnpm 锁文件（建议保留一个，但你可以在团队中约定）
-**/package-lock.json
+# npm / yarn / pnpm 锁文件
+# 注意：frontend/Dockerfile 使用 `npm ci` 构建，缺少 package-lock.json 会导致 Docker 构建失败，
+# 因此前端锁文件必须提交，不能忽略。
 **/yarn.lock
 **/pnpm-lock.yaml
 
@@ -84,7 +85,8 @@ Desktop.ini
 # ========== Docker ==========
 # Docker 镜像/容器临时文件
 **/*.pid
-**/.dockerignore
+# 注意：.dockerignore 必须提交。Docker 构建上下文若包含 node_modules，
+# 会因其中的符号链接（node_modules/.bin/*）在 WSL 路径上直接报错。
 
 # 如果你用 .env 存敏感信息
 .env
