@@ -18,6 +18,9 @@
         <el-menu-item index="/admin/profiles">
           <el-icon><PieChart /></el-icon><span>用户画像</span>
         </el-menu-item>
+        <el-menu-item index="/admin/banners">
+          <el-icon><Picture /></el-icon><span>轮播图管理</span>
+        </el-menu-item>
       </el-menu>
       <div class="sidebar-bottom">
         <el-button text @click="$router.push('/products')">
