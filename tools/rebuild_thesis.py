@@ -136,6 +136,9 @@ def insert_blocks(anchor, blocks, doc, caption_style="图"):
                 cap = anchor.insert_paragraph_before(caption, style="Normal")
                 cap.alignment = CENTER
             insert_table_before(anchor, headers, rows, doc)
+        elif kind == "caption":
+            cap = anchor.insert_paragraph_before(block[1], style=caption_style)
+            cap.alignment = CENTER
         elif kind == "placeholder":
             p = anchor.insert_paragraph_before(block[1], style="Normal")
             p.alignment = CENTER
@@ -410,6 +413,35 @@ BLOCKS_5_3 = [
           "也便于在不同环境中切换不同的密钥。"),
 ]
 
+BLOCKS_6_5 = [
+    ("p", "Allure 报告的实际展示效果如图 6-1 至图 6-3 所示。"),
+    ("caption", "图6-1  Allure 测试报告总览"),
+    ("caption", "图6-2  Allure 测试套件视图"),
+    ("caption", "图6-3  Allure 单个用例执行详情"),
+
+    ("h3", "6.5.4  推荐模块测试"),
+    ("p", "推荐模块是本次新增的智能化功能，其正确性直接影响推荐结果的合理性。针对该模块共补充 25 个单元测试，"
+          "分布在五个测试类中。与业务模块测试不同，推荐模块涉及时间衰减、向量相似度、加权排序等计算逻辑，"
+          "因此测试重点从\u201c接口是否可用\u201d转向\u201c算法结果是否准确\u201d。所有用例均使用 Mockito 隔离 Mapper "
+          "与缓存组件，不依赖数据库，可在任意环境快速执行。"),
+    ("table",
+     ["测试类", "用例数", "覆盖内容"],
+     [
+         ["BehaviorServiceTest", "8", "行为类型权重映射、非法输入拦截、游客归零、关键词截断"],
+         ["ProfileServiceTest", "6", "空行为处理、时间衰减、向量归一化、活跃度分级、更新而非新增"],
+         ["RecommendServiceTest", "5", "相似召回排除自身、冷启动兜底、已购过滤、混合加权、热度补齐"],
+         ["HotServiceTest", "3", "热度加权公式、取消订单不计入、无行为时热度为零"],
+         ["TagExtractionServiceTest", "3", "未配置 Key 时规则降级、已有标签跳过、强制重新抽取"],
+     ],
+     "表6-6  推荐模块单元测试覆盖情况"),
+    ("p", "上述用例与 6.4 节的黑盒用例互为补充：黑盒用例验证功能是否可用，单元测试验证算法逻辑是否准确。"
+          "例如时间衰减用例构造了两条相隔 14 天的行为记录，断言旧标签的权重约为新标签的 0.497 倍，"
+          "与 exp(-0.05×14) 的理论值一致，说明画像的时间折扣逻辑实现正确；"
+          "热度用例则断言\u201c订单 2 件、加购 4 次、浏览 10 次\u201d时热度分等于 24，验证了加权公式的准确性。"),
+    ("p", "执行 mvn test 后，全部 113 个自动化测试通过，其中单元测试 76 个、API 集成测试 37 个，"
+          "无失败、无跳过，说明新增的推荐模块与原有业务模块可以协同工作，未引入回归问题。"),
+]
+
 BLOCKS_6_7 = [
     ("h2", "6.7  推荐算法效果评估"),
     ("p", "功能测试只能说明推荐接口可用，不能说明推荐结果是否准确。为验证算法的有效性，"
@@ -419,7 +451,7 @@ BLOCKS_6_7 = [
           "模拟数据集验证算法有效性，这也是推荐系统研究中常见的做法。模拟数据由脚本按\u201c用户存在"
           "潜在品类偏好\u201d的假设生成：每个用户拥有 1 至 2 个强兴趣品类，行为按浏览 70%、"
           "加购 20%、下单 10% 的比例分布，时间集中在最近 60 天并向近期倾斜。数据生成过程固定随机种子，"
-          "保证实验可复现。数据集统计如表 6-6 所示。"),
+          "保证实验可复现。数据集统计如表 6-7 所示。"),
     ("table",
      ["统计项", "数值"],
      [
@@ -431,7 +463,7 @@ BLOCKS_6_7 = [
          ["时间切分点", "最近 14 天"],
          ["可评估用户数", "202 个"],
      ],
-     "表6-6  实验数据集统计"),
+     "表6-7  实验数据集统计"),
     ("p", "实验采用时间切分而非随机切分：以切分点之前的行为构建画像与相似度，之后的行为作为判断"
           "推荐是否命中的依据。这样可避免用未来信息预测过去，评价结果更接近真实上线效果。"),
     ("h3", "6.7.2  评价指标"),
@@ -443,7 +475,7 @@ BLOCKS_6_7 = [
     ("h3", "6.7.3  对比实验与结果"),
     ("p", "实验对比了四种策略：POP（热门基线，按加权热度排序）、CONTENT（基于内容的过滤）、"
           "CF（基于物品的协同过滤）与 HYBRID（本文的混合加权）。取 K = 5 与 K = 10 两组结果，"
-          "如表 6-7 与图 6-1 所示。"),
+          "如表 6-8 与图 6-4 所示。"),
     ("table",
      ["策略", "P@5", "R@5", "HR@5", "NDCG@5", "覆盖率"],
      [
@@ -452,8 +484,8 @@ BLOCKS_6_7 = [
          ["CONTENT", "0.7208", "0.5923", "0.9901", "0.8055", "100%"],
          ["HYBRID", "0.7307", "0.5960", "0.9901", "0.8129", "100%"],
      ],
-     "表6-7  四种推荐策略的评估结果（K = 5）"),
-    ("img", img("fig-6-1-eval.png"), "图6-1  推荐算法效果对比"),
+     "表6-8  四种推荐策略的评估结果（K = 5）"),
+    ("img", img("fig-6-1-eval.png"), "图6-4  推荐算法效果对比"),
     ("p", "从 K = 10 的结果看，混合策略的 Precision 为 0.5149，Recall 为 0.8197，NDCG 为 0.8264，"
           "均优于其余三种策略，且命中率达到 100%，即全部用户都能在推荐列表中找到至少一件感兴趣的藏品。"),
     ("h3", "6.7.4  结果分析与局限性"),
@@ -545,6 +577,20 @@ SUMMARY_EN = [
     ("p", "Keywords: Collectibles Mall; Front-end and Back-end Separation; Spring Boot; Vue3; "
           "User Profile; Hybrid Recommendation"),
 ]
+
+# 需要补图的图题（占位提示里会带出图名，详细要求见 docs/论文配图清单.md）
+FIG_TITLES = {
+    "3-2": "管理员端功能用例图",
+    "4-7": "购物车操作流程",
+    "4-12": "JWT令牌验证流程",
+    "4-13": "管理员后台管理流程",
+    "5-7": "订单提交页面",
+    "5-10": "订单管理页面",
+    "5-11": "用户管理页面",
+    "6-1": "Allure 测试报告总览",
+    "6-2": "Allure 测试套件视图",
+    "6-3": "Allure 单个用例执行详情",
+}
 
 REPLACE_MAP = {
     "零号藏馆商城系统": "收藏品商城系统",
@@ -657,6 +703,7 @@ def main():
     a_4_4 = find_para(doc, "4.4  系统功能流程设计")
     a_ch5 = find_para(doc, "第五章")
     a_ch6 = find_para(doc, "第六章")
+    a_6_6 = find_para(doc, "6.6  测试结果分析")
     a_ch7 = find_para(doc, "第七章")
 
     # 目录占位（放在第一章之前）
@@ -679,6 +726,7 @@ def main():
     insert_blocks(a_ch5, BLOCKS_4_4, doc)
     insert_blocks(a_ch5, BLOCKS_4_5, doc)
     insert_blocks(a_ch6, BLOCKS_5_3, doc)
+    insert_blocks(a_6_6, BLOCKS_6_5, doc)
     insert_blocks(a_ch7, BLOCKS_6_7, doc)
 
     # 5. 第七章改写
@@ -692,6 +740,21 @@ def main():
         elif t.startswith("同时可以完善前端页面设计"):
             set_para_text(p, NEW_388)
 
+    # 5b. 更新测试数量口径：新增推荐模块 25 个单元测试，单元测试 51 → 76，总数 113 → 138
+    def replace_text(old, new):
+        for p in doc.paragraphs:
+            if old in (p.text or ""):
+                set_para_text(p, p.text.replace(old, new))
+                return True
+        return False
+
+    replace_text("覆盖购物车服务、订单服务、收货地址服务三大核心业务模块",
+                 "覆盖购物车服务、订单服务、收货地址服务、推荐模块四大核心业务模块")
+    replace_text("截至目前，系统共编写单元测试用例51个，其中购物车服务15个、订单服务20个、收货地址服务16个",
+                 "截至目前，系统共编写单元测试用例76个，其中购物车服务15个、订单服务20个、收货地址服务16个、推荐模块25个")
+    replace_text("共设计并执行测试用例113个，其中单元测试51个、API集成测试37个、黑盒功能测试25个",
+                 "共设计并执行测试用例138个，其中单元测试76个、API集成测试37个、黑盒功能测试25个")
+
     # 6. 原文有图题但没有图片的地方，补一个浅色占位提示，便于后续按位置补图
     import re
     placeholders = 0
@@ -703,9 +766,12 @@ def main():
         prev = p._p.getprevious()
         if prev is not None and prev.xpath(".//w:drawing"):
             continue
+        num = m.group(1).replace(" ", "")
+        title = FIG_TITLES.get(num, "")
         ph = p.insert_paragraph_before()
         ph.alignment = CENTER
-        run = ph.add_run("【此处插入图片：图%s】" % m.group(1).replace(" ", ""))
+        run = ph.add_run("【此处插入图片：图%s%s】"
+                         % (num, ("  " + title) if title else ""))
         run.font.size = Pt(9)
         run.font.color.rgb = RGBColor(0xAA, 0xAA, 0xAA)
         placeholders += 1
