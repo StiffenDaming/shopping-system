@@ -121,13 +121,22 @@ docker compose up -d --build
 
 ## 五、推荐模块与大模型 Key
 
-推荐模块的标签抽取依赖大模型 API，Key 通过环境变量注入，不写入镜像与配置文件：
+推荐模块的标签抽取依赖大模型 API，Key 通过环境变量注入，不写入镜像与配置文件。
+
+在项目根目录建 `.env`（已被 `.gitignore` 忽略）后，`docker compose` 会自动读取，无需每次带前缀：
 
 ```bash
-LLM_API_KEY=sk-xxxx docker compose up -d --build
+cp .env.example .env      # 然后编辑 .env，填入 LLM_API_KEY=sk-xxxx
+docker compose up -d --build
 ```
 
 未注入时系统正常启动，标签抽取自动降级为词典规则，其余功能不受影响。
+
+确认容器内是否注入成功：
+
+```bash
+docker compose exec backend env | grep LLM_API_KEY
+```
 
 部署后可用以下接口确认状态（需管理员 Token）：
 
