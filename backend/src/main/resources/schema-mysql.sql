@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS `sys_user` (
   `email` VARCHAR(100) COMMENT '邮箱',
   `role` VARCHAR(20) NOT NULL DEFAULT 'USER' COMMENT '角色: USER-普通用户, ADMIN-管理员',
   `status` INT NOT NULL DEFAULT 1 COMMENT '状态: 1-正常, 0-禁用',
+  `token_version` INT NOT NULL DEFAULT 1 COMMENT '令牌版本：改密/禁用时+1，使旧 token 失效',
   `last_view_orders_time` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '上次查看订单列表的时间（用于红点提示）',
   `deleted` INT NOT NULL DEFAULT 0 COMMENT '逻辑删除: 0-未删除, 1-已删除',
   `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',

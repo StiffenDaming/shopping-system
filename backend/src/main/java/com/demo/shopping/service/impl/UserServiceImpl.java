@@ -48,7 +48,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             throw new BusinessException("账号已被禁用，请联系管理员");
         }
 
-        String token = jwtUtils.generateToken(user.getId(), user.getUsername(), user.getRole());
+        String token = jwtUtils.generateToken(user.getId(), user.getUsername(), user.getRole(),
+                user.getTokenVersion());
 
         LoginVO vo = new LoginVO();
         vo.setUserId(user.getId());
@@ -96,9 +97,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
             throw new BusinessException("原密码错误");
         }
+        // 密码变更后递增令牌版本，使旧 token 立即失效
         User update = new User();
         update.setId(userId);
         update.setPassword(passwordEncoder.encode(newPassword));
+        update.setTokenVersion(nextTokenVersion(user));
         baseMapper.updateById(update);
     }
 
@@ -116,17 +119,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     @Override
-    public void updateUserRole(Long userId, String role) {
-        if (!"ADMIN".equals(role) && !"USER".equals(role)) {
-            throw new BusinessException("角色参数非法");
-        }
-        User update = new User();
-        update.setId(userId);
-        update.setRole(role);
-        baseMapper.updateById(update);
-    }
-
-    @Override
     public void updateUserStatus(Long userId, Integer status) {
         if (status != 0 && status != 1) {
             throw new BusinessException("状态参数非法");
@@ -138,9 +130,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if ("ADMIN".equals(user.getRole())) {
             throw new BusinessException("不允许禁用/启用管理员账号");
         }
+        // 状态变更后递增令牌版本：禁用可让在线用户立即掉线，启用后需重新登录
         User update = new User();
         update.setId(userId);
         update.setStatus(status);
+        update.setTokenVersion(nextTokenVersion(user));
         baseMapper.updateById(update);
     }
 
@@ -153,9 +147,19 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if ("ADMIN".equals(user.getRole())) {
             throw new BusinessException("不允许重置管理员密码");
         }
+        // 重置密码后递增令牌版本，旧 token 立即失效
         User update = new User();
         update.setId(userId);
         update.setPassword(passwordEncoder.encode("123456"));
+        update.setTokenVersion(nextTokenVersion(user));
         baseMapper.updateById(update);
+    }
+
+    /**
+     * 计算下一个令牌版本号（空值按 1 处理）
+     */
+    private int nextTokenVersion(User user) {
+        int current = user.getTokenVersion() == null ? 1 : user.getTokenVersion();
+        return current + 1;
     }
 }

@@ -229,26 +229,20 @@ class OrderServiceImplTest {
             Order order = createOrder(ORDER_ID, USER_ID, "PENDING");
             OrderItem item1 = createOrderItem(ORDER_ID, 10L, "商品A", 2);
             OrderItem item2 = createOrderItem(ORDER_ID, 20L, "商品B", 1);
-            Product productA = createProduct(10L, "商品A", new BigDecimal("99.00"), 10, 1);
-            Product productB = createProduct(20L, "商品B", new BigDecimal("199.00"), 5, 1);
-
-            Allure.step("Mock 订单查询、明细查询、商品查询");
+            Allure.step("Mock 订单查询与明细查询（库存恢复已改为原子 UPDATE，无需先查商品）");
             when(orderMapper.selectById(ORDER_ID)).thenReturn(order);
             when(orderItemMapper.selectList(any())).thenReturn(Arrays.asList(item1, item2));
-            when(productMapper.selectById(10L)).thenReturn(productA);
-            when(productMapper.selectById(20L)).thenReturn(productB);
 
             Allure.step("执行取消订单操作");
             orderService.cancelOrder(USER_ID, ORDER_ID);
 
-            Allure.step("验证：商品A库存恢复为12（10+2），商品B库存恢复为6（5+1）");
-            assertThat(productA.getStock()).isEqualTo(12);
-            assertThat(productB.getStock()).isEqualTo(6);
+            Allure.step("验证：调用原子恢复库存接口，商品A 恢复 2 件、商品B 恢复 1 件");
+            verify(productMapper, times(1)).restoreStock(10L, 2);
+            verify(productMapper, times(1)).restoreStock(20L, 1);
 
             Allure.step("验证：订单状态变为CANCELLED");
             assertThat(order.getStatus()).isEqualTo("CANCELLED");
             verify(orderMapper).updateById(order);
-            verify(productMapper, times(2)).updateById(any(Product.class));
         }
 
         @Test

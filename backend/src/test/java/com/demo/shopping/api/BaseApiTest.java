@@ -1,11 +1,13 @@
 package com.demo.shopping.api;
 
 import com.demo.shopping.common.JwtUtils;
+import com.demo.shopping.entity.User;
 import com.demo.shopping.mapper.*;
 import com.demo.shopping.service.BannerService;
 import com.demo.shopping.service.CaptchaService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.qameta.allure.Allure;
+import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
@@ -14,6 +16,9 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.lenient;
 
 // ==================== Mock 调用链路：====================
 // 测试方法调用 perform(get("/api/cart"), userToken())
@@ -105,6 +110,21 @@ public abstract class BaseApiTest {
 
     @MockBean
     protected BannerService bannerService;
+
+    /**
+     * JwtInterceptor 会按 userId 查库校验「用户是否被禁用」「令牌版本是否一致」，
+     * 测试环境需要让 UserMapper 返回一个有效用户，否则所有带 Token 的请求都会 401。
+     */
+    @BeforeEach
+    void stubTokenOwner() {
+        User owner = new User();
+        owner.setId(2L);
+        owner.setUsername("testuser");
+        owner.setRole("USER");
+        owner.setStatus(1);
+        owner.setTokenVersion(1);
+        lenient().when(userMapper.selectById(anyLong())).thenReturn(owner);
+    }
 
     // ==================== Token 生成 ====================
 

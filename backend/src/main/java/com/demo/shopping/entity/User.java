@@ -29,6 +29,12 @@ public class User {
     /** 状态: 1-正常, 0-禁用 */
     private Integer status;
 
+    /**
+     * 令牌版本：登录时写入 JWT，改密 / 禁用 / 重置密码时 +1，
+     * 使已签发的旧 token 立即失效（JWT 本身无状态，无法主动撤销）。
+     */
+    private Integer tokenVersion;
+
     /** 上次查看订单列表的时间（用于红点提示） */
     private LocalDateTime lastViewOrdersTime;
 

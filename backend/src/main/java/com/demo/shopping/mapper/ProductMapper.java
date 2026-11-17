@@ -14,4 +14,10 @@ public interface ProductMapper extends BaseMapper<Product> {
     @Update("UPDATE product SET stock = stock - #{quantity} "
             + "WHERE id = #{id} AND stock >= #{quantity} AND deleted = 0")
     int deductStock(@Param("id") Long id, @Param("quantity") Integer quantity);
+
+    /**
+     * 条件恢复库存：取消订单时使用，单条原子 UPDATE 避免并发下的丢失更新。
+     */
+    @Update("UPDATE product SET stock = stock + #{quantity} WHERE id = #{id} AND deleted = 0")
+    int restoreStock(@Param("id") Long id, @Param("quantity") Integer quantity);
 }

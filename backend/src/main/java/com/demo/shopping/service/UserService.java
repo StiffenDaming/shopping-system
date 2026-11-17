@@ -20,8 +20,6 @@ public interface UserService extends IService<User> {
     // ===== 管理员功能 =====
     IPage<User> getUserPage(Integer page, Integer size, String keyword);
 
-    void updateUserRole(Long userId, String role);
-
     void updateUserStatus(Long userId, Integer status);
 
     void resetPassword(Long userId);

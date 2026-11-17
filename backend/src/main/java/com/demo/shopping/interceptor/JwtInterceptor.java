@@ -1,12 +1,15 @@
 package com.demo.shopping.interceptor;
 
-import com.demo.shopping.common.BusinessException;
 import com.demo.shopping.common.JwtUtils;
 import com.demo.shopping.common.UserContext;
+import com.demo.shopping.entity.User;
+import com.demo.shopping.mapper.UserMapper;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Claims;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
+
+import javax.annotation.Resource;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -21,6 +24,9 @@ public class JwtInterceptor implements HandlerInterceptor {
 
     private final JwtUtils jwtUtils;
     private final ObjectMapper objectMapper = new ObjectMapper();
+
+    @Resource
+    private UserMapper userMapper;
 
     public JwtInterceptor(JwtUtils jwtUtils) {
         this.jwtUtils = jwtUtils;
@@ -53,6 +59,25 @@ public class JwtInterceptor implements HandlerInterceptor {
             Long userId = claims.get("userId", Long.class);
             String username = claims.getSubject();
             String role = claims.get("role", String.class);
+
+            // JWT 是无状态的，签发后无法主动撤销；因此每次请求额外校验：
+            // 1) 用户是否仍存在；2) 是否被禁用；3) 令牌版本是否与库中一致（改密/禁用会 +1）
+            User user = userMapper.selectById(userId);
+            if (user == null) {
+                writeError(response, 401, "用户不存在，请重新登录");
+                return false;
+            }
+            if (user.getStatus() != null && user.getStatus() == 0) {
+                writeError(response, 401, "账号已被禁用，请联系管理员");
+                return false;
+            }
+            Integer tokenVersion = claims.get("tv", Integer.class);
+            int currentVersion = user.getTokenVersion() == null ? 1 : user.getTokenVersion();
+            if (tokenVersion != null && tokenVersion != currentVersion) {
+                writeError(response, 401, "登录状态已失效，请重新登录");
+                return false;
+            }
+
             UserContext.set(new UserContext.LoginUser(userId, username, role));
             return true;
         } catch (Exception e) {

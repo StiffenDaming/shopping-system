@@ -12,6 +12,8 @@ import com.demo.shopping.service.ProductService;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.math.BigDecimal;
+
 /**
  * 商品服务实现
  */
@@ -57,6 +59,12 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
         if (product.getPrice() == null) {
             throw new BusinessException("商品价格不能为空");
         }
+        if (product.getPrice().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new BusinessException("商品价格必须大于 0");
+        }
+        if (product.getStock() != null && product.getStock() < 0) {
+            throw new BusinessException("商品库存不能为负数");
+        }
         if (product.getStatus() == null) {
             product.setStatus(1);
         }
@@ -70,6 +78,12 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
     public void updateProduct(Product product) {
         if (product.getId() == null) {
             throw new BusinessException("商品ID不能为空");
+        }
+        if (product.getPrice() != null && product.getPrice().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new BusinessException("商品价格必须大于 0");
+        }
+        if (product.getStock() != null && product.getStock() < 0) {
+            throw new BusinessException("商品库存不能为负数");
         }
         baseMapper.updateById(product);
     }

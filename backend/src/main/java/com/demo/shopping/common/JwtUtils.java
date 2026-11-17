@@ -33,10 +33,20 @@ public class JwtUtils {
      * 生成 JWT Token
      */
     public String generateToken(Long userId, String username, String role) {
+        return generateToken(userId, username, role, null);
+    }
+
+    /**
+     * 生成 Token，并携带令牌版本（用于改密/禁用后使旧 token 立刻失效）
+     */
+    public String generateToken(Long userId, String username, String role, Integer tokenVersion) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("userId", userId);
         claims.put("username", username);
         claims.put("role", role);
+        if (tokenVersion != null) {
+            claims.put("tv", tokenVersion);
+        }
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + expiration);
         return Jwts.builder()

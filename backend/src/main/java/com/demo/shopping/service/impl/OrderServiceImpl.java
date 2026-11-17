@@ -150,15 +150,11 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
             throw new BusinessException("只能取消待发货订单");
         }
 
-        // 恢复库存
+        // 恢复库存：单条原子 UPDATE，避免并发取消时的丢失更新
         List<OrderItem> items = orderItemMapper.selectList(new LambdaQueryWrapper<OrderItem>()
                 .eq(OrderItem::getOrderId, orderId));
         for (OrderItem item : items) {
-            Product product = productMapper.selectById(item.getProductId());
-            if (product != null) {
-                product.setStock(product.getStock() + item.getQuantity());
-                productMapper.updateById(product);
-            }
+            productMapper.restoreStock(item.getProductId(), item.getQuantity());
         }
 
         order.setStatus("CANCELLED");
