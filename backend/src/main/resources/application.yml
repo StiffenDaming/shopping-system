@@ -17,13 +17,20 @@ spring:
 mybatis-plus:
   configuration:
     map-underscore-to-camel-case: true
-    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    # 用 SLF4J 输出 SQL：默认 info 级别不打印，排查问题时把
+    # logging.level.com.demo.shopping.mapper 调成 debug 即可
+    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
   global-config:
     db-config:
       id-type: auto
       logic-delete-field: deleted
       logic-delete-value: 1
       logic-not-delete-value: 0
+
+# 日志级别：Mapper 包保持 info，避免定时任务批量查询（如画像重算遍历全部用户）刷屏
+logging:
+  level:
+    com.demo.shopping.mapper: info
 
 # JWT 配置
 jwt:

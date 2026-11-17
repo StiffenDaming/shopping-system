@@ -69,6 +69,28 @@ public abstract class BaseApiTest {
     @MockBean
     protected DeliveryAddressMapper deliveryAddressMapper;
 
+    // ==================== 推荐模块 Mapper（同样需要 Mock） ====================
+    // 说明：@MapperScan 会为每个 Mapper 接口创建 MapperFactoryBean，
+    // 而测试环境没有 SqlSessionFactory，未 Mock 的 Mapper 会导致上下文启动失败。
+
+    @MockBean
+    protected UserBehaviorMapper userBehaviorMapper;
+
+    @MockBean
+    protected ProductTagMapper productTagMapper;
+
+    @MockBean
+    protected UserProfileMapper userProfileMapper;
+
+    @MockBean
+    protected ProductHotMapper productHotMapper;
+
+    @MockBean
+    protected RecommendStatsMapper recommendStatsMapper;
+
+    @MockBean
+    protected InteractionMapper interactionMapper;
+
     // ==================== Token 生成 ====================
 
     /**
