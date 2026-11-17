@@ -4,11 +4,11 @@
     <div class="products-main">
       <div class="filter-bar">
         <div class="filter-left">
-          <el-input v-model="query.keyword" placeholder="搜索商品..." style="width:240px" clearable @clear="loadProducts" @keyup.enter="loadProducts" />
-          <el-select v-model="query.categoryId" placeholder="全部分类" clearable style="width:140px" @change="loadProducts">
+          <el-input v-model="query.keyword" placeholder="搜索商品..." style="width:240px" clearable @clear="applyFilter" @keyup.enter="applyFilter" />
+          <el-select v-model="query.categoryId" placeholder="全部分类" clearable style="width:140px" @change="applyFilter">
             <el-option v-for="c in categories" :key="c.id" :label="c.name" :value="c.id" />
           </el-select>
-          <el-select v-model="query.sort" placeholder="排序" style="width:160px" @change="loadProducts">
+          <el-select v-model="query.sort" placeholder="排序" style="width:160px" @change="applyFilter">
             <el-option label="默认排序（最新上架）" value="" />
             <el-option label="价格从低到高" value="price-asc" />
             <el-option label="价格从高到低" value="price-desc" />
@@ -16,11 +16,19 @@
           </el-select>
         </div>
         <div class="filter-right">
-          <el-button type="primary" @click="loadProducts">搜索</el-button>
+          <el-button type="primary" @click="applyFilter">搜索</el-button>
         </div>
       </div>
 
-      <div class="hero-row">
+      <div class="hero-toggle">
+        <el-button link type="primary" size="small" @click="toggleHero">
+          <el-icon v-if="heroCollapsed"><ArrowDown /></el-icon>
+          <el-icon v-else><ArrowUp /></el-icon>
+          {{ heroCollapsed ? '展开轮播图与热藏榜' : '收起轮播图与热藏榜' }}
+        </el-button>
+      </div>
+
+      <div v-show="!heroCollapsed" class="hero-row">
         <div class="hero-carousel">
           <el-carousel v-if="banners.length" height="100%" :interval="4000" arrow="hover"
                        indicator-position="inside">
@@ -110,6 +118,8 @@ const total = ref(0)
 const hotProducts = ref([])
 const forYou = ref([])
 const banners = ref([])
+// 顶部轮播与热藏榜是否收起：筛选商品时自动收起，避免挡住结果
+const heroCollapsed = ref(false)
 
 const query = reactive({
   keyword: '',
@@ -131,6 +141,17 @@ async function loadProducts() {
   } finally {
     loading.value = false
   }
+}
+
+// 筛选类操作：先收起顶部轮播与热藏榜，让商品直接进入视野，并把页码重置回第一页
+function applyFilter() {
+  heroCollapsed.value = true
+  query.page = 1
+  loadProducts()
+}
+
+function toggleHero() {
+  heroCollapsed.value = !heroCollapsed.value
 }
 
 // 首页轮播图
@@ -235,6 +256,13 @@ onMounted(() => {
 .product-bottom { display: flex; justify-content: space-between; align-items: center; }
 .empty { padding: 60px 0; }
 .pagination { display: flex; justify-content: center; margin-top: 30px; }
+
+.hero-toggle {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 4px;
+}
+.hero-toggle .el-button { font-size: 12px; }
 
 /* 首页 3:1 区域：左侧轮播图（16:9）+ 右侧热藏榜竖排，两者等高 */
 .hero-row {
