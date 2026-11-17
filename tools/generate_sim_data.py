@@ -29,9 +29,32 @@ import json
 import random
 import urllib.request
 
-API_BASE = "http://127.0.0.1:8080"
+# 后端地址候选：本地开发 8080、Docker 部署 8081、经 Nginx 反代 80
+API_CANDIDATES = [
+    "http://127.0.0.1:8080",
+    "http://127.0.0.1:8081",
+    "http://127.0.0.1",
+]
+API_BASE = API_CANDIDATES[0]
 USER_ID_BASE = 1000
 DEFAULT_PASSWORD_HASH = "$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2"
+
+
+def resolve_api(explicit=None):
+    """确定可用的后端地址：显式指定优先，否则按候选列表探测。"""
+    if explicit:
+        return explicit.rstrip("/")
+    for base in API_CANDIDATES:
+        try:
+            with urllib.request.urlopen(base + "/api/categories/list", timeout=3) as response:
+                if response.status == 200:
+                    return base
+        except Exception:
+            continue
+    raise RuntimeError(
+        "未探测到可用后端，请确认服务已启动，或用 --api 指定地址"
+        "（本地开发一般是 http://127.0.0.1:8080，Docker 部署是 http://127.0.0.1:8081）"
+    )
 
 
 def fetch_products(api_base):
@@ -52,8 +75,11 @@ def build_arg_parser():
     parser.add_argument("--min-events", type=int, default=20, help="每个用户最少行为数")
     parser.add_argument("--max-events", type=int, default=60, help="每个用户最多行为数")
     parser.add_argument("--seed", type=int, default=20261117, help="随机种子，保证实验可复现")
+    parser.add_argument("--password-hash", default=None,
+                        help="模拟用户密码的 BCrypt 哈希；建议传入 admin 的哈希，使密码统一为 123456")
     parser.add_argument("--out", default="/mnt/c/Users/Public/sim.sql", help="输出 SQL 文件路径")
-    parser.add_argument("--api", default=API_BASE, help="后端地址")
+    parser.add_argument("--api", default=None,
+                        help="后端地址，不指定时自动探测 8080 / 8081 / 80")
     return parser
 
 
@@ -80,7 +106,14 @@ def main():
     args = build_arg_parser().parse_args()
     rng = random.Random(args.seed)
 
-    products = fetch_products(args.api)
+    api = resolve_api(args.api)
+    print("后端地址: %s" % api)
+    products = fetch_products(api)
+
+    password_hash = args.password_hash or DEFAULT_PASSWORD_HASH
+    if not args.password_hash:
+        print("提示: 未指定 --password-hash，模拟用户将使用内置示例哈希（密码不是 123456）。")
+        print("      若需要用 sim001 等账号登录演示，请传入 admin 的密码哈希，见 docs/从零启动指南 4.4 节。")
     by_category = {}
     for product in products:
         by_category.setdefault(product["categoryId"], []).append(product)
@@ -103,7 +136,7 @@ def main():
         out.append(
             "INSERT IGNORE INTO sys_user(id, username, password, email, role, status) "
             "VALUES(%d, 'sim%03d', %s, 'sim%03d@demo.com', 'USER', 1);"
-            % (uid, i, sql_escape(DEFAULT_PASSWORD_HASH), i)
+            % (uid, i, sql_escape(password_hash), i)
         )
     out.append("")
 
