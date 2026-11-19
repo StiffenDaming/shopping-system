@@ -61,6 +61,13 @@ recommend:
   hybrid-beta: 0.3
   hybrid-gamma: 0.1
 
+# 客服助手配置
+assistant:
+  # 知识库命中阈值：低于该分数视为未命中，转大模型或兜底
+  match-threshold: 0.35
+  # 每个用户每天可调用大模型的次数上限（命中知识库不计次）
+  daily-limit: 30
+
 ---
 # ===== MySQL 本地开发配置 =====
 spring:

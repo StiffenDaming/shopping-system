@@ -28,6 +28,7 @@
                 <el-dropdown-item command="orders">我的订单</el-dropdown-item>
                 <el-dropdown-item command="address">收货地址</el-dropdown-item>
                 <el-dropdown-item command="profile">个人中心</el-dropdown-item>
+                <el-dropdown-item command="assistant" divided>客服助手</el-dropdown-item>
                 <el-dropdown-item v-if="userStore.isAdmin" command="admin" divided>管理后台</el-dropdown-item>
                 <el-dropdown-item command="logout" divided>退出登录</el-dropdown-item>
               </el-dropdown-menu>
@@ -40,6 +41,8 @@
         </template>
       </div>
     </div>
+
+    <AssistantDrawer v-model="assistantVisible" />
   </div>
 </template>
 
@@ -49,11 +52,13 @@ import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { useUserStore } from '../stores/user'
 import request from '../utils/request'
+import AssistantDrawer from './AssistantDrawer.vue'
 
 const router = useRouter()
 const userStore = useUserStore()
 const cartCount = ref(0)
 const unreadCount = ref(0)
+const assistantVisible = ref(false)
 let pollTimer = null
 
 async function fetchCartCount() {
@@ -85,6 +90,8 @@ function handleCommand(cmd) {
     router.push('/address')
   } else if (cmd === 'profile') {
     router.push('/profile')
+  } else if (cmd === 'assistant') {
+    assistantVisible.value = true
   }
 }
 

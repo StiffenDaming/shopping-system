@@ -3,6 +3,7 @@ package com.demo.shopping.api;
 import com.demo.shopping.common.JwtUtils;
 import com.demo.shopping.entity.User;
 import com.demo.shopping.mapper.*;
+import com.demo.shopping.service.AssistantService;
 import com.demo.shopping.service.BannerService;
 import com.demo.shopping.service.CaptchaService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -110,6 +111,14 @@ public abstract class BaseApiTest {
 
     @MockBean
     protected BannerService bannerService;
+
+    // AssistantController 依赖 AssistantService，同样需要 Mock
+    @MockBean
+    protected AssistantService assistantService;
+
+    // 客服助手的未命中记录 Mapper（@MapperScan 会让 @WebMvcTest 也尝试创建它）
+    @MockBean
+    protected ChatUnansweredMapper chatUnansweredMapper;
 
     /**
      * JwtInterceptor 会按 userId 查库校验「用户是否被禁用」「令牌版本是否一致」，

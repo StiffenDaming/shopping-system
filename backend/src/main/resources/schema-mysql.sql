@@ -113,6 +113,19 @@ CREATE TABLE IF NOT EXISTS `banner` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='首页轮播图表';
 
+-- 客服助手：未命中知识库的问题记录（用于补充 FAQ）
+CREATE TABLE IF NOT EXISTS `chat_unanswered` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '记录ID',
+  `user_id` BIGINT DEFAULT NULL COMMENT '提问用户ID',
+  `question` VARCHAR(300) NOT NULL COMMENT '用户提问原文',
+  `source` VARCHAR(20) NOT NULL COMMENT '回答来源: LLM/FALLBACK',
+  `top_score` DECIMAL(4,3) DEFAULT NULL COMMENT 'FAQ最高匹配得分',
+  `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  PRIMARY KEY (`id`),
+  KEY `idx_chat_time` (`create_time`),
+  KEY `idx_chat_question` (`question`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='客服助手未命中问题记录表';
+
 -- =============================================
 -- 智能推荐模块（用户画像 + 热门推荐 + 过滤推荐）
 -- =============================================
