@@ -51,7 +51,9 @@ services:
     container_name: shopping-frontend
     restart: "no"
     ports:
-      - "80:80"       # 前端直接走 80 端口
+      # 宿主机端口可用 .env 里的 FRONTEND_PORT 覆盖（默认 80）。
+      # 若本机 80 被其它程序（如课程环境的 Nginx）占用，改成 8000 等空闲端口即可。
+      - "${FRONTEND_PORT:-80}:80"
     depends_on:
       - backend
     networks:

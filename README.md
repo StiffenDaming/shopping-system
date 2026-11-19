@@ -497,6 +497,25 @@ PENDING（待发货）
 
 ## 常见问题
 
+### 前端容器起来了，但 `docker ps` 里没有 `0.0.0.0:80->80/tcp`，访问 localhost 打不开
+
+说明宿主机 80 端口被别的程序占了（Windows 上常见的是课程环境自带的 Nginx），
+Docker 无法把容器端口映射到宿主机，容器本身是正常运行的。
+
+排查：
+
+```powershell
+# Windows 下看谁占了 80
+Get-NetTCPConnection -LocalPort 80 -State Listen | Select-Object OwningProcess
+Get-Process -Id <上面的PID> | Select-Object ProcessName, Path
+```
+
+两种处理方式：
+
+1. **换个端口**（推荐，不影响其它环境）：在 `.env` 里加一行 `FRONTEND_PORT=8000`，
+   然后 `docker compose up -d frontend`，访问 `http://localhost:8000`；
+2. **腾出 80**：停掉占用它的程序（如 `nginx.exe -s stop`），再 `docker compose up -d --force-recreate frontend`。
+
 ### 1. Maven 下载依赖很慢 / 失败
 
 项目已提供 `maven-settings.xml`，使用阿里云镜像：
