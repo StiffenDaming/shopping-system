@@ -6,7 +6,7 @@
   - 测试数量：backend/target/surefire-reports（129 = 单元 89 + 接口 40）
   - 推荐评估：docs/实验数据-推荐算法评估.md（K=5 主实验）
   - 数据规模：19 商品 / 7 分类 / 93 标签 / 9241 条行为 / 200 模拟用户
-  - 表结构：schema-mysql.sql（12 张表）
+  - 表结构：schema-mysql.sql（13 张表）
 
 运行：
   python tools/build_defense_ppt.py
@@ -363,13 +363,13 @@ bullet_block(s, 9.35, 2.55, 2.85, [
 
 # ---------- 06 数据库 ----------
 s = new_slide(prs)
-header(s, "PART 02 · 数据库设计", "12 张表，分三层组织",
+header(s, "PART 02 · 数据库设计", "13 张表，分三层组织",
        "交易数据保证一致性，推荐数据独立存放，互不干扰")
 
 groups = [
     ("交易核心（7 张）", "sys_user · category · product · cart_item · orders · order_item · delivery_address", BLUE, 1.92),
     ("推荐模块（4 张）", "user_behavior · product_tag · user_profile · product_hot", GOLD, 3.02),
-    ("运营配置（1 张）", "banner（首页轮播位）", INK2, 4.12),
+    ("运营与辅助（2 张）", "banner（首页轮播位）· chat_unanswered（客服未命中记录）", INK2, 4.12),
 ]
 for title, body, accent, gy in groups:
     rect(s, 0.85, gy, 11.6, 0.95, fill=SOFT, line_color=LINE)
