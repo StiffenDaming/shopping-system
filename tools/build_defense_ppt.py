@@ -247,7 +247,7 @@ toc = [
     ("01", "选题背景与需求", "行业痛点 · 功能与非功能需求"),
     ("02", "系统设计与实现", "架构 · 数据库 · 交易闭环 · 工程难点"),
     ("03", "个性化推荐模块", "用户画像 · 混合推荐 · 大模型标签"),
-    ("04", "测试与效果评估", "129 个自动化测试 · 四策略对比实验"),
+    ("04", "测试与效果评估", "138 个自动化测试 · 四策略对比实验"),
 ]
 y = 2.15
 for num, title, desc in toc:
@@ -573,7 +573,45 @@ textbox(s, 6.9, 5.88, 5.3, 0.6,
         "标签越准，猜你喜欢的可解释性越强。",
         10.5, False, MUTED, spacing=1.35)
 
-# ---------- 12 工程难点 ----------
+# ---------- 12 客服助手 ----------
+s = new_slide(prs)
+header(s, "PART 03 · 大模型应用", "客服助手：先查知识库，再问大模型",
+       "常见问题由知识库直接回答（0 成本、毫秒级），没覆盖的才产生 API 费用")
+
+assist_steps = [("用户提问", "推荐问题或自由输入", BLUE),
+                ("本地匹配", "关键词特征度 +\n二元组相似度，阈值 0.35", INK2),
+                ("大模型兜底", "带上最相近的条目\n作为参考上下文", GOLD),
+                ("未命中记录", "写入 chat_unanswered\n用于补充知识库", "5A6B7C")]
+x = 0.85
+for i, (title, sub, accent) in enumerate(assist_steps):
+    rect(s, x, 2.0, 2.6, 1.45, fill=WHITE, line_color=accent)
+    textbox(s, x + 0.2, 2.14, 2.2, 0.3, title, 14, True, INK)
+    textbox(s, x + 0.2, 2.56, 2.25, 0.8, sub, 10, False, MUTED, spacing=1.3)
+    if i < 3:
+        textbox(s, x + 2.66, 2.55, 0.35, 0.4, "→", 20, True, GOLD)
+    x += 3.05
+
+assist_stats = [("24", "条知识库问答"), ("0.35", "命中阈值"),
+                ("30", "每人每日次数"), ("47ms", "命中响应")]
+x = 0.85
+for num, label in assist_stats:
+    rect(s, x, 3.72, 2.78, 0.95, fill=INK, line_color=None)
+    textbox(s, x, 3.82, 2.78, 0.42, num, 20, True, WHITE, PP_ALIGN.CENTER)
+    textbox(s, x, 4.28, 2.78, 0.28, label, 9.5, False, "C7D3E0", PP_ALIGN.CENTER)
+    x += 2.94
+
+textbox(s, 0.85, 4.9, 11.6, 0.3, "为什么不用向量检索", 13, True, INK)
+bullet_block(s, 0.85, 5.26, 11.4, [
+    ("够用", "24 条规模下关键词 + 二元组相似度已足够，匹配回归 14/14"),
+    ("可解释", "命中哪条、得分多少都能说清楚，便于排查答非所问"),
+    ("零依赖", "不需要向量库与 embedding 服务，部署与演示都更轻"),
+], size=10.5, gap=0.36)
+
+textbox(s, 0.85, 6.5, 11.6, 0.35,
+        "安全约束：Key 只在后端；提示词要求不编造订单状态、不透露内部实现，超范围直接说不知道。",
+        10, False, MUTED)
+
+# ---------- 13 工程难点 ----------
 s = new_slide(prs)
 header(s, "PART 02 · 工程实践", "四个真实踩过的坑",
        "这些不是教科书问题，是实际运行中暴露并修复的")
@@ -602,10 +640,10 @@ textbox(s, 0.85, 6.35, 11.6, 0.45,
 
 # ---------- 13 测试 ----------
 s = new_slide(prs)
-header(s, "PART 04 · 系统测试", "129 个自动化测试",
+header(s, "PART 04 · 系统测试", "138 个自动化测试",
        "JUnit 5 + Mockito + MockMvc，Allure 生成可视化报告")
 
-stats = [("129", "自动化测试"), ("89", "单元测试"), ("40", "API 集成测试"), ("6", "测试模块")]
+stats = [("138", "自动化测试"), ("98", "单元测试"), ("40", "API 集成测试"), ("6", "测试模块")]
 x = 0.85
 for num, label in stats:
     rect(s, x, 1.95, 2.78, 1.1, fill=INK, line_color=None)
@@ -615,7 +653,7 @@ for num, label in stats:
 
 textbox(s, 0.85, 3.3, 5.6, 0.3, "单元测试分布", 13, True, INK)
 rows = [("订单服务", "21"), ("购物车服务", "15"), ("收货地址", "16"),
-        ("推荐模块", "25"), ("图形验证码", "6"), ("商品服务", "6")]
+        ("推荐模块", "25"), ("图形验证码", "6"), ("商品服务", "6"), ("客服助手", "9")]
 y = 3.7
 for name, cnt in rows:
     textbox(s, 0.85, y, 2.6, 0.3, name, 11, False, TEXT)
@@ -728,7 +766,7 @@ bullet_block(s, 0.9, 2.45, 5.4, [
     "完整交易闭环与后台管理",
     "用户画像 + 三路混合推荐",
     "大模型标签抽取与降级策略",
-    "129 个自动化测试 + 离线评估",
+    "138 个自动化测试 + 离线评估",
 ], size=11.5, gap=0.52, color="C7D3E0")
 
 textbox(s, 6.9, 2.05, 5.6, 0.3, "不足与展望", 13, True, GOLD)
@@ -751,7 +789,7 @@ textbox(s, 0.9, 6.6, 11.5, 0.35, "Q & A", 12, True, GOLD)
 for i, slide in enumerate(prs.slides, start=1):
     if i in (1, len(prs.slides._sldIdLst)):
         continue
-    footer(slide, i)
+    footer(slide, i, len(prs.slides._sldIdLst))
 
 prs.save(OUT)
 print("已生成:", OUT)

@@ -1225,6 +1225,99 @@
                 <td><span class="tag tag-ui">功能</span></td>
             </tr>
         </table>
+        <h3>6.5 客服助手</h3>
+        <table>
+            <tr>
+                <th style="width:70px">编号</th>
+                <th style="width:160px">测试用例</th>
+                <th>前置条件</th>
+                <th>测试步骤</th>
+                <th>预期结果</th>
+                <th style="width:70px">优先级</th>
+                <th style="width:70px">类型</th>
+            </tr>
+            <tr>
+                <td>TC-ASS-001</td>
+                <td>知识库加载</td>
+                <td>无</td>
+                <td>启动后调用 listFaqItems()</td>
+                <td>返回 24 条问答，问题与分类字段完整</td>
+                <td><span class="tag tag-high">高</span></td>
+                <td><span class="tag tag-unit">单元</span></td>
+            </tr>
+            <tr>
+                <td>TC-ASS-002</td>
+                <td>命中知识库不调用大模型</td>
+                <td>知识库已加载</td>
+                <td>ask("怎么取消订单")</td>
+                <td>来源为 FAQ，命中「取消订单」条目；未调用大模型、未写未命中记录</td>
+                <td><span class="tag tag-high">高</span></td>
+                <td><span class="tag tag-unit">单元</span></td>
+            </tr>
+            <tr>
+                <td>TC-ASS-003</td>
+                <td>未命中转大模型</td>
+                <td>已配置 LLM_API_KEY</td>
+                <td>ask("你们的藏品有鉴定证书吗")</td>
+                <td>来源为 LLM，返回模型文本，并写入 chat_unanswered</td>
+                <td><span class="tag tag-high">高</span></td>
+                <td><span class="tag tag-unit">单元</span></td>
+            </tr>
+            <tr>
+                <td>TC-ASS-004</td>
+                <td>大模型异常时兜底</td>
+                <td>大模型调用抛异常</td>
+                <td>ask(未命中问题)</td>
+                <td>来源为 FALLBACK，提示联系管理员，接口不报错</td>
+                <td><span class="tag tag-high">高</span></td>
+                <td><span class="tag tag-unit">单元</span></td>
+            </tr>
+            <tr>
+                <td>TC-ASS-005</td>
+                <td>未配置 Key 时降级</td>
+                <td>LLM_API_KEY 为空</td>
+                <td>ask(未命中问题)</td>
+                <td>来源为 FALLBACK，不调用大模型，剩余次数为空</td>
+                <td><span class="tag tag-medium">中</span></td>
+                <td><span class="tag tag-unit">单元</span></td>
+            </tr>
+            <tr>
+                <td>TC-ASS-006</td>
+                <td>每日调用限流</td>
+                <td>日限额设为 3</td>
+                <td>连续发起 4 次未命中提问</td>
+                <td>前 3 次正常返回，第 4 次提示「次数已用完」</td>
+                <td><span class="tag tag-high">高</span></td>
+                <td><span class="tag tag-unit">单元</span></td>
+            </tr>
+            <tr>
+                <td>TC-ASS-007</td>
+                <td>命中知识库不消耗次数</td>
+                <td>日限额设为 3</td>
+                <td>先命中 FAQ，再发起一次未命中提问</td>
+                <td>剩余次数只减少 1</td>
+                <td><span class="tag tag-medium">中</span></td>
+                <td><span class="tag tag-unit">单元</span></td>
+            </tr>
+            <tr>
+                <td>TC-ASS-008</td>
+                <td>文本归一化</td>
+                <td>无</td>
+                <td>normalize("  怎么 取消 订单？ ")</td>
+                <td>返回 "怎么取消订单"，标点与空白被去除</td>
+                <td><span class="tag tag-medium">中</span></td>
+                <td><span class="tag tag-unit">单元</span></td>
+            </tr>
+            <tr>
+                <td>TC-ASS-009</td>
+                <td>二元组相似度</td>
+                <td>无</td>
+                <td>分别计算相同串与无关串的 Jaccard</td>
+                <td>相同串为 1.0，无关串为 0.0</td>
+                <td><span class="tag tag-medium">中</span></td>
+                <td><span class="tag tag-unit">单元</span></td>
+            </tr>
+        </table>
     </div>
 
     <!-- 运行测试 -->
