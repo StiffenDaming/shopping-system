@@ -61,8 +61,7 @@ shopping-system/
 │               └── OrderManage.vue     # 订单管理
 ├── docker-compose.yml           # Docker 一键编排（MySQL + 后端 + 前端）
 ├── maven-settings.xml           # Maven 镜像配置
-├── Docker部署指南.md             # Docker 部署完整文档
-└── 从零启动指南.md               # 本地开发启动指南
+└── 从零启动指南.md               # 启动、部署（含 Docker 与服务端）、排错
 ```
 
 ## 环境要求
@@ -486,7 +485,7 @@ PENDING（待发货）
 
 ## 部署建议（生产环境）
 
-推荐使用 Docker Compose 一键部署，详见 [Docker部署指南.md](Docker部署指南.md)。
+推荐使用 Docker Compose 一键部署，详见 [从零启动指南.md](从零启动指南.md) 的「方式 B」。
 
 手动部署方式：
 1. 后端打包: `mvn clean package` → 生成 `target/shopping-1.0.0.jar`
@@ -556,7 +555,7 @@ npm install
 ## 更多文档
 
 - [从零启动指南.md](从零启动指南.md) — 本地开发完整启动步骤、推荐模块配置、排错
-- [Docker部署指南.md](Docker部署指南.md) — Docker 部署完整说明
+
 - [docs/前端缓存与部署刷新笔记.md](docs/前端缓存与部署刷新笔记.md) — 缓存机制与部署刷新
 - [docs/实验数据-推荐算法评估.md](docs/实验数据-推荐算法评估.md) — 推荐算法离线评估数据
 - [docs/推荐模块-实现说明.md](docs/推荐模块-实现说明.md) — 推荐模块设计决策、验证数据与论文改动对照
